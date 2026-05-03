@@ -61,6 +61,8 @@ const initial: WizardState = {
   showForgeAttribution: true,
   projects: [],
   domain: "",
+  deployedUrl: undefined,
+  deploySlug: undefined,
 };
 
 const EXAMPLE_PROJECTS: Omit<Project, "id">[] = [

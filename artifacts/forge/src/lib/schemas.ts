@@ -58,6 +58,8 @@ export const WizardStateSchema = z.object({
 
   domain: z.string().min(3).max(80),
   email: z.string().optional(),
+  deployedUrl: z.string().optional(),
+  deploySlug: z.string().optional(),
 });
 
 export type WizardState = z.infer<typeof WizardStateSchema>;

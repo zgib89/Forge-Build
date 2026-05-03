@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import { Copy, Check, FileText, Layers, FolderGit2, Globe } from "lucide-react";
+import { Copy, Check, FileText, Layers, FolderGit2, Globe, ExternalLink, Rocket } from "lucide-react";
 import { useWizard } from "../lib/store";
 import { PRESETS } from "../lib/presets";
 import ThemeToggle from "../components/ThemeToggle";
@@ -81,6 +81,7 @@ export default function Success() {
   const projects = useWizard((s) => s.projects);
   const sections = useWizard((s) => s.sections);
   const domain = useWizard((s) => s.domain);
+  const deployedUrl = useWizard((s) => s.deployedUrl);
   const reset = useWizard((s) => s.reset);
   const [, navigate] = useLocation();
   const slug =
@@ -92,7 +93,9 @@ export default function Success() {
     { icon: Layers, label: `${presetName} preset`, sub: "complete visual identity wired up" },
     { icon: FileText, label: `${enabledSections} ${enabledSections === 1 ? "page" : "pages"}`, sub: "Astro routes + layouts" },
     { icon: FolderGit2, label: `${projects.length} ${projects.length === 1 ? "project" : "projects"}`, sub: "Markdown + Zod-validated frontmatter" },
-    { icon: Globe, label: domain || "DEPLOY.md", sub: "Cloudflare-ready, custom domain steps inside" },
+    deployedUrl
+      ? { icon: Rocket, label: "Live on Cloudflare Pages", sub: deployedUrl.replace(/^https?:\/\//, "") }
+      : { icon: Globe, label: domain || "DEPLOY.md", sub: "Cloudflare-ready, custom domain steps inside" },
   ];
 
   return (
@@ -119,8 +122,41 @@ export default function Success() {
 
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
         <p className="eyebrow mb-4">Success</p>
-        <h1 className="text-4xl md:text-6xl mb-4">Your portfolio is downloaded.</h1>
-        <p className="text-mute text-lg mb-10">Here's what's in the zip — and what to do next.</p>
+        {deployedUrl ? (
+          <>
+            <h1 className="text-4xl md:text-6xl mb-4">Your portfolio is live.</h1>
+            <div className="card p-5 mb-10 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+              <div className="min-w-0">
+                <p className="text-xs text-mute m-0 mb-1 font-mono uppercase tracking-wider">Live URL</p>
+                <a
+                  href={deployedUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-base md:text-lg break-all underline"
+                  data-testid="link-deployed-url"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  {deployedUrl}
+                </a>
+              </div>
+              <a
+                href={deployedUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary text-sm whitespace-nowrap"
+                data-testid="button-open-live"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Open
+              </a>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="text-4xl md:text-6xl mb-4">Your portfolio is downloaded.</h1>
+            <p className="text-mute text-lg mb-10">Here's what's in the zip — and what to do next.</p>
+          </>
+        )}
 
         <div className="card p-5 mb-10">
           <p className="font-medium text-sm mb-3">What you got</p>
