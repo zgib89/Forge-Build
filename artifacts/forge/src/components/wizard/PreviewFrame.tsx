@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useWizard, getWizardState } from "../../lib/store";
+import { apiUrl } from "../../lib/api";
 
 export default function PreviewFrame() {
   const wizard = useWizard();
@@ -40,7 +41,7 @@ export default function PreviewFrame() {
         projects: wizard.projects.map((p) => ({ ...p, coverImage: undefined })),
       };
       const encoded = encodeURIComponent(JSON.stringify(state));
-      setSrc(`/api/forge/preview?state=${encoded}`);
+      setSrc(`${apiUrl("/api/forge/preview")}?state=${encoded}`);
     }, 250);
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps

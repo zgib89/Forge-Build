@@ -3,8 +3,7 @@ import { useLocation } from "wouter";
 import { Download, Mail, Loader2 } from "lucide-react";
 import { useWizard, getWizardState } from "../../lib/store";
 import { WizardStateSchema } from "../../lib/schemas";
-
-const API_BASE = `${import.meta.env.BASE_URL}api`.replace(/\/+/g, "/");
+import { apiUrl } from "../../lib/api";
 
 export default function StepExport() {
   const wizard = useWizard();
@@ -31,13 +30,13 @@ export default function StepExport() {
         throw new Error(messages || "Invalid wizard state");
       }
       if (sendEmail && wizard.email) {
-        await fetch(`/api/forge/email`, {
+        await fetch(apiUrl(`/api/forge/email`), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: wizard.email }),
         });
       }
-      const res = await fetch(`/api/forge/export`, {
+      const res = await fetch(apiUrl(`/api/forge/export`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
