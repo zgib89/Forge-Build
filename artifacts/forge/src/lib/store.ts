@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { PRESETS, type PresetId, type PaletteDef } from "./presets";
 import type { Project, WizardState } from "./schemas";
+import {
+  PRESET_FONT_DEFAULTS,
+  PRESET_RADIUS_DEFAULTS,
+  type FontPairId,
+  type RadiusScaleId,
+} from "./typography";
 
 const defaultPreset = PRESETS[0];
 const defaultPalette = defaultPreset.palettes[0];
@@ -37,6 +43,8 @@ const initial: WizardState = {
   },
   paletteName: defaultPalette.name,
   darkMode: false,
+  fontPair: PRESET_FONT_DEFAULTS[defaultPreset.id] as FontPairId,
+  radiusScale: PRESET_RADIUS_DEFAULTS[defaultPreset.id] as RadiusScaleId,
   sections: {
     projects: true,
     writing: false,
@@ -75,6 +83,8 @@ export const useWizard = create<WizardStore>((set) => ({
         accent: palette.accent,
         accent2: palette.accent2,
       },
+      fontPair: PRESET_FONT_DEFAULTS[id] as FontPairId,
+      radiusScale: PRESET_RADIUS_DEFAULTS[id] as RadiusScaleId,
     });
   },
   setPalette: (p) =>

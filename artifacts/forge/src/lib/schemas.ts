@@ -37,6 +37,10 @@ export const WizardStateSchema = z.object({
   palette: PaletteSchema,
   paletteName: z.string(),
   darkMode: z.boolean().default(false),
+  fontPair: z
+    .enum(["editorial", "modern", "mono", "display", "classic"])
+    .default("modern"),
+  radiusScale: z.enum(["sharp", "soft", "pill"]).default("soft"),
 
   sections: z.object({
     projects: z.boolean(),

@@ -15,6 +15,8 @@ export default function PreviewFrame() {
     preset: wizard.preset,
     palette: wizard.palette,
     darkMode: wizard.darkMode,
+    fontPair: wizard.fontPair,
+    radiusScale: wizard.radiusScale,
     sections: wizard.sections,
     footerStyle: wizard.footerStyle,
     showForgeAttribution: wizard.showForgeAttribution,
@@ -53,7 +55,7 @@ export default function PreviewFrame() {
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--color-danger)" }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--color-warn)" }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--color-success)" }} />
-        <span className="ml-3">preview · {wizard.preset} · {wizard.paletteName}</span>
+        <span className="ml-3">preview · {wizard.preset} · {wizard.paletteName} · {wizard.fontPair} · {wizard.radiusScale}{wizard.darkMode ? " · dark" : ""}</span>
       </div>
       <iframe
         ref={ref}
