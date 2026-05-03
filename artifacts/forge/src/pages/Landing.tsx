@@ -20,6 +20,7 @@ import { PRESETS } from "../lib/presets";
 import LivePreview from "../components/LivePreview";
 import Marquee from "../components/Marquee";
 import Reveal from "../components/Reveal";
+import ThemeToggle from "../components/ThemeToggle";
 
 const HEADLINES = [
   "your portfolio.",
@@ -126,6 +127,14 @@ const MARQUEE_ITEMS = [
 
 export default function Landing() {
   const heroRef = useRef<HTMLDivElement | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Magnetic-ish parallax for hero (subtle, no library)
   useEffect(() => {
@@ -153,42 +162,54 @@ export default function Landing() {
         .caret { display: inline-block; width: 0.06em; height: 0.85em; vertical-align: -0.08em; background: currentColor; margin-left: 0.04em; animation: blink 1.1s step-end infinite; }
       `}</style>
 
-      <header className="px-6 py-5 max-w-7xl mx-auto flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-3">
-          <span
-            aria-hidden
-            style={{
-              width: 28, height: 28, borderRadius: 8,
-              background: "linear-gradient(135deg, var(--color-accent) 0%, oklch(0.60 0.22 295) 100%)",
-              display: "grid", placeItems: "center", color: "white",
-              fontFamily: "var(--font-display)", fontSize: 18, lineHeight: 1,
-            }}
-          >F</span>
-          <span className="font-display text-xl tracking-tight">Forge</span>
+      <header
+        className="sticky top-0 z-50 transition-all"
+        style={{
+          background: scrolled ? "color-mix(in oklch, var(--color-bg) 75%, transparent)" : "transparent",
+          backdropFilter: scrolled ? "blur(14px)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(14px)" : "none",
+          borderBottom: scrolled ? "1px solid var(--color-border)" : "1px solid transparent",
+          transition: "background 250ms, border-color 250ms, backdrop-filter 250ms",
+        }}
+      >
+        <div className="px-6 py-4 max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: "linear-gradient(135deg, var(--color-accent) 0%, oklch(0.60 0.22 295) 100%)",
+                display: "grid", placeItems: "center", color: "white",
+                fontFamily: "var(--font-display)", fontSize: 18, lineHeight: 1,
+              }}
+            >F</span>
+            <span className="font-display text-xl tracking-tight">Forge</span>
+          </div>
+          <nav className="flex items-center gap-2">
+            <a
+              href="#how-it-works"
+              className="hidden md:inline-block btn btn-ghost text-sm"
+              data-testid="nav-how"
+            >
+              How it works
+            </a>
+            <a
+              href="#presets"
+              className="hidden md:inline-block btn btn-ghost text-sm"
+              data-testid="nav-presets"
+            >
+              Presets
+            </a>
+            <ThemeToggle />
+            <Link
+              href="/forge"
+              className="btn btn-primary text-sm"
+              data-testid="nav-open"
+            >
+              Open the Forge <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </nav>
         </div>
-        <nav className="flex items-center gap-2">
-          <a
-            href="#how-it-works"
-            className="hidden md:inline-block btn btn-ghost text-sm"
-            data-testid="nav-how"
-          >
-            How it works
-          </a>
-          <a
-            href="#presets"
-            className="hidden md:inline-block btn btn-ghost text-sm"
-            data-testid="nav-presets"
-          >
-            Presets
-          </a>
-          <Link
-            href="/forge"
-            className="btn btn-primary text-sm"
-            data-testid="nav-open"
-          >
-            Open the Forge <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </nav>
       </header>
 
       <main>

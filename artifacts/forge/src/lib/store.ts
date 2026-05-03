@@ -25,6 +25,7 @@ export interface WizardStore extends WizardState {
   updateProject: (id: string, patch: Partial<Project>) => void;
   removeProject: (id: string) => void;
   moveProject: (id: string, dir: -1 | 1) => void;
+  reorderProjects: (fromIdx: number, toIdx: number) => void;
   reset: () => void;
 }
 
@@ -180,6 +181,21 @@ export const useWizard = create<WizardStore>()(
           next.splice(target, 0, m);
           return { projects: next };
         }),
+      reorderProjects: (fromIdx, toIdx) =>
+        set((s) => {
+          if (
+            fromIdx < 0 ||
+            toIdx < 0 ||
+            fromIdx >= s.projects.length ||
+            toIdx >= s.projects.length ||
+            fromIdx === toIdx
+          )
+            return s;
+          const next = [...s.projects];
+          const [m] = next.splice(fromIdx, 1);
+          next.splice(toIdx, 0, m);
+          return { projects: next };
+        }),
       reset: () => set({ ...initial, step: 0 }),
     }),
     {
@@ -199,6 +215,7 @@ export const useWizard = create<WizardStore>()(
           updateProject,
           removeProject,
           moveProject,
+          reorderProjects,
           reset,
           ...rest
         } = s;
@@ -222,6 +239,7 @@ export function getWizardState(s: WizardStore): WizardState {
     updateProject,
     removeProject,
     moveProject,
+    reorderProjects,
     reset,
     ...state
   } = s;

@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useWizard } from "../lib/store";
 import StepIdentity from "../components/wizard/StepIdentity";
 import StepPreset from "../components/wizard/StepPreset";
@@ -8,7 +8,8 @@ import StepSections from "../components/wizard/StepSections";
 import StepProjects from "../components/wizard/StepProjects";
 import StepExport from "../components/wizard/StepExport";
 import PreviewFrame from "../components/wizard/PreviewFrame";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import ThemeToggle from "../components/ThemeToggle";
+import { ArrowLeft, ArrowRight, Check, Command } from "lucide-react";
 
 const STEPS = [
   { label: "Identity", component: StepIdentity },
@@ -18,6 +19,55 @@ const STEPS = [
   { label: "Projects", component: StepProjects },
   { label: "Export", component: StepExport },
 ];
+
+function SavedPulse() {
+  // Subscribe to wizard state changes; flash a "Saved" pill briefly.
+  const [show, setShow] = useState(false);
+  const firstRun = useRef(true);
+  const timer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return useWizard.subscribe((state, prev) => {
+      // Ignore step-only changes (those aren't really "edits")
+      if (state === prev) return;
+      if (firstRun.current) {
+        firstRun.current = false;
+        return;
+      }
+      setShow(true);
+      if (timer.current) window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(() => setShow(false), 1500);
+    });
+  }, []);
+
+  return (
+    <span
+      className="font-mono text-[10px] uppercase tracking-wider"
+      style={{
+        opacity: show ? 1 : 0,
+        color: "var(--color-success)",
+        transition: "opacity 250ms",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+      }}
+      data-testid="saved-pulse"
+      aria-live="polite"
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 999,
+          background: "var(--color-success)",
+          boxShadow: show ? "0 0 0 4px color-mix(in oklch, var(--color-success) 25%, transparent)" : "none",
+          transition: "box-shadow 400ms",
+        }}
+      />
+      Saved
+    </span>
+  );
+}
 
 export default function Wizard() {
   const step = useWizard((s) => s.step);
@@ -35,13 +85,62 @@ export default function Wizard() {
     return true;
   }, [step, name, role]);
 
+  // Keyboard shortcuts: cmd/ctrl + arrow keys or cmd/ctrl + enter
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const isMeta = e.metaKey || e.ctrlKey;
+      if (!isMeta) return;
+      // Don't interfere with text inputs unless modifier is held
+      if (e.key === "Enter" && canAdvance && step < STEPS.length - 1) {
+        e.preventDefault();
+        next();
+      } else if (e.key === "ArrowRight" && canAdvance && step < STEPS.length - 1) {
+        e.preventDefault();
+        next();
+      } else if (e.key === "ArrowLeft" && step > 0) {
+        e.preventDefault();
+        prev();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canAdvance, step, next, prev]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-app">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="font-display text-xl">Forge</Link>
-          <div className="text-sm text-mute font-mono">
-            Step {step + 1} of {STEPS.length} · {STEPS[step].label}
+        <div className="px-6 py-4 flex items-center justify-between gap-4">
+          <Link href="/" className="font-display text-xl flex items-center gap-2">
+            <span
+              aria-hidden
+              style={{
+                width: 24, height: 24, borderRadius: 6,
+                background: "linear-gradient(135deg, var(--color-accent) 0%, oklch(0.60 0.22 295) 100%)",
+                display: "grid", placeItems: "center", color: "white",
+                fontFamily: "var(--font-display)", fontSize: 15, lineHeight: 1,
+              }}
+            >F</span>
+            Forge
+          </Link>
+          <div className="flex items-center gap-4">
+            <SavedPulse />
+            <span className="text-sm text-mute font-mono hidden md:inline">
+              Step {step + 1} of {STEPS.length} · {STEPS[step].label}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const ev = new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true });
+                window.dispatchEvent(ev);
+              }}
+              className="btn btn-ghost text-xs hidden md:inline-flex"
+              title="Open command palette"
+              aria-label="Open command palette"
+              data-testid="button-cmdk"
+            >
+              <Command className="w-3 h-3" /> <span className="font-mono">⌘K</span>
+            </button>
+            <ThemeToggle />
           </div>
         </div>
         <div
@@ -57,8 +156,8 @@ export default function Wizard() {
               position: "absolute",
               inset: 0,
               width: `${((step + 1) / STEPS.length) * 100}%`,
-              background: "var(--color-accent)",
-              transition: "width 300ms cubic-bezier(0.16,1,0.3,1)",
+              background: "linear-gradient(90deg, var(--color-accent) 0%, oklch(0.60 0.22 295) 100%)",
+              transition: "width 400ms cubic-bezier(0.16,1,0.3,1)",
             }}
           />
         </div>
@@ -135,7 +234,7 @@ export default function Wizard() {
 
           <div
             className="flex-1 px-6 py-8 overflow-y-auto"
-            style={{ animation: "stepIn 200ms cubic-bezier(0.16,1,0.3,1)" }}
+            style={{ animation: "stepIn 280ms cubic-bezier(0.16,1,0.3,1)" }}
             key={step}
           >
             <StepComp />
@@ -149,15 +248,22 @@ export default function Wizard() {
                 disabled={step === 0}
                 className="btn btn-ghost"
                 data-testid="button-prev"
+                title="Back (⌘ ←)"
               >
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
+              <div className="text-xs text-mute font-mono hidden md:flex items-center gap-2">
+                <kbd className="cmdk-kbd">⌘</kbd>
+                <kbd className="cmdk-kbd">↵</kbd>
+                <span>continue</span>
+              </div>
               <button
                 type="button"
                 onClick={next}
                 disabled={!canAdvance}
                 className="btn btn-primary"
                 data-testid="button-next"
+                title="Continue (⌘ ↵)"
               >
                 Continue <ArrowRight className="w-4 h-4" />
               </button>
@@ -173,7 +279,7 @@ export default function Wizard() {
         </section>
       </div>
 
-      <style>{`@keyframes stepIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style>{`@keyframes stepIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
     </div>
   );
 }

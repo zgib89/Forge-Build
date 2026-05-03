@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Copy, Check, FileText, Layers, FolderGit2, Globe } from "lucide-react";
 import { useWizard } from "../lib/store";
 import { PRESETS } from "../lib/presets";
+import ThemeToggle from "../components/ThemeToggle";
 
 function CodeBox({ code, testId }: { code: string; testId: string }) {
   const [copied, setCopied] = useState(false);
@@ -100,17 +101,20 @@ export default function Success() {
       <div className="aurora-bg" aria-hidden="true" />
       <header className="px-6 py-6 max-w-5xl mx-auto flex items-center justify-between">
         <Link href="/" className="font-display text-2xl">Forge</Link>
-        <button
-          type="button"
-          onClick={() => {
-            reset();
-            navigate("/forge");
-          }}
-          className="btn btn-ghost text-sm"
-          data-testid="button-build-another"
-        >
-          Build another
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => {
+              reset();
+              navigate("/forge");
+            }}
+            className="btn btn-ghost text-sm"
+            data-testid="button-build-another"
+          >
+            Build another
+          </button>
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
