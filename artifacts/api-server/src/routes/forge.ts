@@ -31,6 +31,35 @@ router.post("/forge/export", async (req, res) => {
   }
 });
 
+router.get("/forge/preview", (req, res) => {
+  const stateParam =
+    typeof req.query.state === "string" ? req.query.state : undefined;
+  if (!stateParam) {
+    res.status(400).send("missing ?state= query param");
+    return;
+  }
+  let parsedJson: unknown;
+  try {
+    parsedJson = JSON.parse(stateParam);
+  } catch {
+    res.status(400).send("invalid state JSON");
+    return;
+  }
+  const parsed = WizardStateSchema.safeParse(parsedJson);
+  if (!parsed.success) {
+    res
+      .status(400)
+      .send(
+        `<!doctype html><html><body style="font-family:monospace;padding:2rem;color:#888;">Invalid preview state</body></html>`,
+      );
+    return;
+  }
+  const html = renderPreviewHtml(parsed.data);
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.send(html);
+});
+
 router.post("/forge/preview", (req, res) => {
   const parsed = WizardStateSchema.safeParse(req.body);
   if (!parsed.success) {
