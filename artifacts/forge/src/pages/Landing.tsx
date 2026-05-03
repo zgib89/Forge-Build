@@ -58,7 +58,18 @@ export default function Landing() {
             <KineticHeadline />
           </div>
           <p className="mt-8 text-lg md:text-xl text-mute max-w-2xl mx-auto">
-            Built by Zac Gibson. Astro 6, Cloudflare Workers, deployed in five minutes. Yours forever.
+            Built by{" "}
+            <a
+              href="https://zacgibson.work"
+              className="underline"
+              style={{ color: "var(--color-accent)" }}
+              target="_blank"
+              rel="noreferrer"
+              data-testid="link-zac-hero"
+            >
+              Zac Gibson
+            </a>
+            . Astro 6, Cloudflare Workers, deployed in five minutes. Yours forever.
           </p>
           <p className="mt-3 text-sm text-mute font-mono">
             No login. No subscription. No vendor lock-in. You get the code.
@@ -141,7 +152,40 @@ export default function Landing() {
             </div>
             <div>
               <p className="eyebrow mb-2">Tools</p>
-              <p>JotterDown · RighteousRecon · zacgibson.work</p>
+              <p className="space-x-1">
+                <a
+                  href="https://jotterdown.com"
+                  className="hover:text-app"
+                  style={{ color: "var(--color-accent)" }}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-testid="link-jotterdown"
+                >
+                  JotterDown
+                </a>
+                <span>·</span>
+                <a
+                  href="https://righteousrecon.com"
+                  className="hover:text-app"
+                  style={{ color: "var(--color-accent)" }}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-testid="link-righteousrecon"
+                >
+                  RighteousRecon
+                </a>
+                <span>·</span>
+                <a
+                  href="https://zacgibson.work"
+                  className="hover:text-app"
+                  style={{ color: "var(--color-accent)" }}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-testid="link-zacgibson"
+                >
+                  zacgibson.work
+                </a>
+              </p>
             </div>
             <div>
               <p className="eyebrow mb-2">Built with</p>
