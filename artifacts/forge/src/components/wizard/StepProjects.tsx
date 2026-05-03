@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { useWizard } from "../../lib/store";
 
 export default function StepProjects() {
@@ -6,6 +6,14 @@ export default function StepProjects() {
   const addProject = useWizard((s) => s.addProject);
   const updateProject = useWizard((s) => s.updateProject);
   const removeProject = useWizard((s) => s.removeProject);
+  const moveProject = useWizard((s) => s.moveProject);
+
+  const onCover = (id: string, file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => updateProject(id, { coverImage: String(reader.result) });
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="space-y-6">
@@ -28,14 +36,36 @@ export default function StepProjects() {
           <div key={p.id} className="card p-5 space-y-3" data-testid={`project-${i}`}>
             <div className="flex items-baseline justify-between">
               <span className="font-mono text-xs text-mute">Project {String(i + 1).padStart(2, "0")}</span>
-              <button
-                type="button"
-                onClick={() => removeProject(p.id)}
-                className="btn btn-ghost text-xs px-2 py-1"
-                data-testid={`button-remove-project-${i}`}
-              >
-                <Trash2 className="w-3 h-3" /> Remove
-              </button>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => moveProject(p.id, -1)}
+                  disabled={i === 0}
+                  className="btn btn-ghost text-xs px-2 py-1"
+                  data-testid={`button-move-up-${i}`}
+                  aria-label="Move up"
+                >
+                  <ArrowUp className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveProject(p.id, 1)}
+                  disabled={i === projects.length - 1}
+                  className="btn btn-ghost text-xs px-2 py-1"
+                  data-testid={`button-move-down-${i}`}
+                  aria-label="Move down"
+                >
+                  <ArrowDown className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeProject(p.id)}
+                  className="btn btn-ghost text-xs px-2 py-1"
+                  data-testid={`button-remove-project-${i}`}
+                >
+                  <Trash2 className="w-3 h-3" /> Remove
+                </button>
+              </div>
             </div>
             <label className="block">
               <span className="text-xs font-medium mb-1 block">Title *</span>
@@ -121,6 +151,38 @@ export default function StepProjects() {
                 />
               </label>
             </div>
+            <label className="block">
+              <span className="text-xs font-medium mb-1 block">Cover image</span>
+              <div className="flex items-center gap-3">
+                {p.coverImage ? (
+                  <img
+                    src={p.coverImage}
+                    alt=""
+                    className="w-20 h-14 object-cover border border-app rounded"
+                  />
+                ) : (
+                  <div className="w-20 h-14 surface border border-app rounded flex items-center justify-center text-xs text-mute">
+                    none
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => onCover(p.id, e.target.files?.[0])}
+                  className="text-xs"
+                  data-testid={`input-project-cover-${i}`}
+                />
+                {p.coverImage && (
+                  <button
+                    type="button"
+                    onClick={() => updateProject(p.id, { coverImage: undefined })}
+                    className="btn btn-ghost text-xs px-2 py-1"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </label>
           </div>
         ))}
       </div>

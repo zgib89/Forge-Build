@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useWizard } from "../lib/store";
 import StepIdentity from "../components/wizard/StepIdentity";
 import StepPreset from "../components/wizard/StepPreset";
@@ -27,6 +27,7 @@ export default function Wizard() {
   const name = useWizard((s) => s.name);
   const role = useWizard((s) => s.role);
 
+  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
   const StepComp = STEPS[step].component;
 
   const canAdvance = useMemo(() => {
@@ -43,8 +44,38 @@ export default function Wizard() {
         </div>
       </header>
 
+      <div className="lg:hidden flex border-b border-app">
+        <button
+          type="button"
+          onClick={() => setMobileTab("edit")}
+          className="flex-1 py-3 text-sm font-medium"
+          style={{
+            color: mobileTab === "edit" ? "var(--color-accent)" : "var(--color-text-mute)",
+            borderBottom: mobileTab === "edit" ? "2px solid var(--color-accent)" : "2px solid transparent",
+          }}
+          data-testid="tab-edit"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab("preview")}
+          className="flex-1 py-3 text-sm font-medium"
+          style={{
+            color: mobileTab === "preview" ? "var(--color-accent)" : "var(--color-text-mute)",
+            borderBottom: mobileTab === "preview" ? "2px solid var(--color-accent)" : "2px solid transparent",
+          }}
+          data-testid="tab-preview"
+        >
+          Preview
+        </button>
+      </div>
+
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[40%_60%]">
-        <section className="border-r border-app flex flex-col" data-testid="wizard-pane">
+        <section
+          className={`border-r border-app flex flex-col ${mobileTab === "edit" ? "flex" : "hidden"} lg:flex`}
+          data-testid="wizard-pane"
+        >
           <nav className="px-6 py-4 border-b border-app">
             <ol className="flex items-center gap-2 overflow-x-auto" aria-label="Wizard progress">
               {STEPS.map((s, i) => {
@@ -114,7 +145,10 @@ export default function Wizard() {
           )}
         </section>
 
-        <section className="hidden lg:block bg-surface" style={{ background: "var(--color-surface)" }}>
+        <section
+          className={`bg-surface ${mobileTab === "preview" ? "block" : "hidden"} lg:block`}
+          style={{ background: "var(--color-surface)" }}
+        >
           <PreviewFrame />
         </section>
       </div>

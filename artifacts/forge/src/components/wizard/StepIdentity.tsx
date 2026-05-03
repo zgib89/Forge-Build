@@ -5,6 +5,7 @@ export default function StepIdentity() {
   const role = useWizard((s) => s.role);
   const tagline = useWizard((s) => s.tagline);
   const location = useWizard((s) => s.location);
+  const githubUsername = useWizard((s) => s.githubUsername);
   const profilePhoto = useWizard((s) => s.profilePhoto);
   const patch = useWizard((s) => s.patch);
 
@@ -71,6 +72,18 @@ export default function StepIdentity() {
           placeholder="Murfreesboro, TN"
           maxLength={60}
           data-testid="input-location"
+        />
+      </label>
+
+      <label className="block">
+        <span className="text-sm font-medium mb-1.5 block">GitHub username</span>
+        <input
+          type="text"
+          value={githubUsername ?? ""}
+          onChange={(e) => patch({ githubUsername: e.target.value })}
+          placeholder="zacgibson"
+          maxLength={40}
+          data-testid="input-github"
         />
       </label>
 

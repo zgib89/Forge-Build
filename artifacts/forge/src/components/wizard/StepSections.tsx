@@ -9,9 +9,16 @@ const TOGGLES: { key: keyof ReturnType<typeof useWizard.getState>["sections"]; l
   { key: "uses", label: "Uses page", desc: "Tools and gear." },
 ];
 
+const FOOTER_STYLES: { value: "minimal" | "detailed" | "credits"; label: string; desc: string }[] = [
+  { value: "minimal", label: "Minimal", desc: "Just a copyright line." },
+  { value: "detailed", label: "Detailed", desc: "Links + nav + copyright." },
+  { value: "credits", label: "Credits", desc: "Stack, build info, and thanks." },
+];
+
 export default function StepSections() {
   const sections = useWizard((s) => s.sections);
   const showAttribution = useWizard((s) => s.showForgeAttribution);
+  const footerStyle = useWizard((s) => s.footerStyle);
   const patch = useWizard((s) => s.patch);
 
   return (
@@ -52,6 +59,28 @@ export default function StepSections() {
             />
           </label>
         ))}
+      </div>
+
+      <div className="pt-4">
+        <p className="text-sm font-medium mb-2">Footer style</p>
+        <div className="grid grid-cols-3 gap-2">
+          {FOOTER_STYLES.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => patch({ footerStyle: f.value })}
+              className="card p-3 text-left"
+              style={{
+                borderColor: footerStyle === f.value ? "var(--color-accent)" : "var(--color-border)",
+                background: footerStyle === f.value ? "var(--color-surface)" : "transparent",
+              }}
+              data-testid={`button-footer-${f.value}`}
+            >
+              <p className="text-sm font-medium">{f.label}</p>
+              <p className="text-xs text-mute mt-1">{f.desc}</p>
+            </button>
+          ))}
+        </div>
       </div>
 
       <label className="flex items-start gap-3 cursor-pointer pt-2">
