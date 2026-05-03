@@ -6,14 +6,14 @@ export const sharedTemplates: Record<string, string> = {
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro build",
+    "check": "astro check",
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.0.0",
-    "@astrojs/mdx": "^4.0.0",
     "@astrojs/sitemap": "^3.2.0",
     "@tailwindcss/vite": "^4.0.0",
     "astro": "^6.1.9",
@@ -21,12 +21,22 @@ export const sharedTemplates: Record<string, string> = {
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.0",
     "@biomejs/biome": "^1.9.0",
     "@types/node": "^22.0.0",
-    "wrangler": "^3.80.0"
+    "typescript": "^5.6.0",
+    "wrangler": "^4.0.0"
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "esbuild",
+      "sharp",
+      "workerd"
+    ]
   }
 }
 `,
@@ -65,12 +75,7 @@ export default defineConfig({
   "wrangler.jsonc": `{
   "name": "{{slug state.name}}-portfolio",
   "compatibility_date": "2025-01-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "main": "./dist/_worker.js/index.js",
-  "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS"
-  }
+  "compatibility_flags": ["nodejs_compat"]
 }
 `,
 
