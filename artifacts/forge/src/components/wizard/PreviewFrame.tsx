@@ -4,8 +4,7 @@ import { useWizard, getWizardState } from "../../lib/store";
 export default function PreviewFrame() {
   const wizard = useWizard();
   const ref = useRef<HTMLIFrameElement | null>(null);
-  const [doc, setDoc] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const [src, setSrc] = useState<string>("about:blank");
 
   const stateKey = JSON.stringify({
     name: wizard.name,
@@ -16,7 +15,9 @@ export default function PreviewFrame() {
     palette: wizard.palette,
     darkMode: wizard.darkMode,
     sections: wizard.sections,
+    footerStyle: wizard.footerStyle,
     showForgeAttribution: wizard.showForgeAttribution,
+    githubUsername: wizard.githubUsername,
     projects: wizard.projects.map((p) => ({
       id: p.id,
       title: p.title,
@@ -29,27 +30,17 @@ export default function PreviewFrame() {
   });
 
   useEffect(() => {
-    const handle = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const state = {
-          ...getWizardState(wizard),
-          name: wizard.name || "Your Name",
-          role: wizard.role || "Your Role",
-          domain: wizard.domain || "yoursite.work",
-        };
-        const res = await fetch(`/api/forge/preview`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(state),
-        });
-        const html = await res.text();
-        setDoc(html);
-      } catch {
-        setDoc("<html><body style='font-family:monospace;padding:2rem'>Preview unavailable</body></html>");
-      } finally {
-        setLoading(false);
-      }
+    const handle = setTimeout(() => {
+      const state = {
+        ...getWizardState(wizard),
+        name: wizard.name || "Your Name",
+        role: wizard.role || "Your Role",
+        domain: wizard.domain || "yoursite.work",
+        profilePhoto: undefined,
+        projects: wizard.projects.map((p) => ({ ...p, coverImage: undefined })),
+      };
+      const encoded = encodeURIComponent(JSON.stringify(state));
+      setSrc(`/api/forge/preview?state=${encoded}`);
     }, 250);
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,12 +53,11 @@ export default function PreviewFrame() {
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--color-warn)" }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--color-success)" }} />
         <span className="ml-3">preview · {wizard.preset} · {wizard.paletteName}</span>
-        {loading && <span className="ml-auto opacity-70">updating…</span>}
       </div>
       <iframe
         ref={ref}
         title="Portfolio preview"
-        srcDoc={doc}
+        src={src}
         className="flex-1 w-full border-0 bg-white"
         sandbox="allow-same-origin"
         data-testid="iframe-preview"
