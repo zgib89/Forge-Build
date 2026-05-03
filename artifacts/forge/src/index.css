@@ -199,9 +199,15 @@
   .marquee-track {
     display: inline-flex;
     gap: 3rem;
+    padding-right: 3rem;
     white-space: nowrap;
     animation: marquee linear infinite;
     will-change: transform;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+  }
+  .marquee-wrap:hover .marquee-track {
+    animation-play-state: paused;
   }
   .marquee-item {
     display: inline-flex;
@@ -213,8 +219,8 @@
     letter-spacing: 0.04em;
   }
   @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-33.3333%, 0, 0); }
   }
 
   /* Live preview frame */

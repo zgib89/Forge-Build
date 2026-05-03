@@ -302,7 +302,7 @@ export default function Landing() {
                 <span style={{ color: "var(--color-accent)" }}>◆</span> {m}
               </span>
             ))}
-            speed={45}
+            speed={30}
           />
         </section>
 
