@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { z } from "zod";
 import { WizardStateSchema } from "../forge/schemas";
 import { buildPortfolioZip } from "../forge/zip-builder";
 import { renderPreviewHtml } from "../forge/preview-renderer";
@@ -76,9 +77,18 @@ router.post("/forge/preview", (req, res) => {
   res.send(html);
 });
 
+const EmailPayloadSchema = z.object({
+  email: z.string().email().max(254),
+  source: z.string().max(40).optional(),
+});
+
 router.post("/forge/email", (req, res) => {
-  const email =
-    typeof req.body?.email === "string" ? req.body.email : undefined;
+  const parsed = EmailPayloadSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ ok: false, error: "Invalid email payload" });
+    return;
+  }
+  const { email } = parsed.data;
   logger.info({ email: email ? "captured" : "skipped" }, "forge email");
   res.json({ ok: true });
 });

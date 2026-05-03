@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Copy, Check, ExternalLink } from "lucide-react";
 import { useWizard } from "../lib/store";
 
@@ -77,10 +77,6 @@ export default function Success() {
   const name = useWizard((s) => s.name);
   const reset = useWizard((s) => s.reset);
   const slug = (name || "you").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || "your";
-
-  useEffect(() => {
-    return () => {};
-  }, []);
 
   return (
     <>

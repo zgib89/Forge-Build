@@ -71,14 +71,19 @@ import Layout from "../layouts/Layout.astro";
     }
   }
 
+  const safeId = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+|-+$/g, "") || "project";
+  const safeExt = (s: string) =>
+    /^[a-z0-9]+$/.test(s) ? s : "png";
   for (let i = 0; i < state.projects.length; i++) {
     const p = state.projects[i];
+    const id = safeId(p.id);
     let coverPath: string | undefined;
     if (p.coverImage) {
       const buf = dataUrlToBuffer(p.coverImage);
       if (buf) {
-        const ext = dataUrlExt(p.coverImage);
-        const name = `${p.id}.${ext}`;
+        const ext = safeExt(dataUrlExt(p.coverImage));
+        const name = `${id}.${ext}`;
         zip.file(`public/projects/${name}`, buf);
         coverPath = `/projects/${name}`;
       }
@@ -94,7 +99,7 @@ import Layout from "../layouts/Layout.astro";
       cover: coverPath,
       order: i,
     });
-    zip.file(`src/content/projects/${p.id}.md`, md);
+    zip.file(`src/content/projects/${id}.md`, md);
   }
 
   if (state.projects.length === 0) {

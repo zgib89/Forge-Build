@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 export const ProjectSchema = z.object({
-  id: z.string(),
+  id: z
+    .string()
+    .min(1)
+    .max(40)
+    .regex(/^[a-z0-9][a-z0-9-]*$/, "id must be a slug: [a-z0-9-]"),
   title: z.string().min(1).max(80),
   summary: z.string().min(1).max(160),
   stack: z.array(z.string()).default([]),
