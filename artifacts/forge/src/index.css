@@ -62,6 +62,15 @@
   input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 20%, transparent);
+  }
+  .forge-switch:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 35%, transparent);
+  }
+  button:focus-visible {
+    outline: 2px solid color-mix(in oklch, var(--color-accent) 70%, transparent);
+    outline-offset: 2px;
   }
 }
 

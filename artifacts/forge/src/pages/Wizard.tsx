@@ -37,10 +37,30 @@ export default function Wizard() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="px-6 py-4 border-b border-app flex items-center justify-between">
-        <Link href="/" className="font-display text-xl">Forge</Link>
-        <div className="text-sm text-mute font-mono">
-          Step {step + 1} of {STEPS.length}
+      <header className="border-b border-app">
+        <div className="px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="font-display text-xl">Forge</Link>
+          <div className="text-sm text-mute font-mono">
+            Step {step + 1} of {STEPS.length} · {STEPS[step].label}
+          </div>
+        </div>
+        <div
+          aria-hidden="true"
+          style={{
+            height: 2,
+            background: "var(--color-border)",
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: `${((step + 1) / STEPS.length) * 100}%`,
+              background: "var(--color-accent)",
+              transition: "width 300ms cubic-bezier(0.16,1,0.3,1)",
+            }}
+          />
         </div>
       </header>
 

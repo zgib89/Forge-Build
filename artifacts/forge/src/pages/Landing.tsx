@@ -1,6 +1,20 @@
 import { Link } from "wouter";
 import { useEffect, useState } from "react";
-import { ArrowRight, Zap, Palette, Code, Globe, Sparkles, Gauge } from "lucide-react";
+import {
+  ArrowRight,
+  Zap,
+  Palette,
+  Code,
+  Globe,
+  Sparkles,
+  Gauge,
+  UserRound,
+  Layers,
+  SlidersHorizontal,
+  ListChecks,
+  FolderGit2,
+  PackageCheck,
+} from "lucide-react";
 import { PRESETS } from "../lib/presets";
 
 const HEADLINES = [
@@ -31,12 +45,21 @@ function KineticHeadline() {
 }
 
 const FEATURES = [
-  { icon: Zap, title: "Astro 6 + Cloudflare Workers", desc: "Your site costs zero dollars to host." },
+  { icon: Zap, title: "Astro 6 + Cloudflare Workers", desc: "Free hosting, edge-fast worldwide. Your bill is zero dollars." },
   { icon: Palette, title: "Tailwind v4 + OKLCH tokens", desc: "Perceptually uniform color, dark mode for free." },
-  { icon: Sparkles, title: "Native View Transitions", desc: "No SPA tax, browser-native page transitions." },
-  { icon: Code, title: "Content Collections", desc: "Markdown projects, Zod-validated frontmatter." },
+  { icon: Sparkles, title: "Native View Transitions", desc: "No SPA tax — browser-native page transitions." },
+  { icon: Code, title: "Content Collections", desc: "Markdown projects with Zod-validated frontmatter." },
   { icon: Globe, title: "Custom domain in 5 minutes", desc: "DEPLOY.md walks you through Cloudflare." },
-  { icon: Gauge, title: "Lighthouse 100 by default", desc: "You didn't have to earn it; it's how Forge ships." },
+  { icon: Gauge, title: "Lighthouse 100 by default", desc: "You don't have to earn it; it's how Forge ships." },
+];
+
+const STEPS = [
+  { icon: UserRound, title: "Identity", desc: "Name, role, tagline, photo." },
+  { icon: Layers, title: "Preset", desc: "Pick the visual identity that fits." },
+  { icon: SlidersHorizontal, title: "Make it yours", desc: "Tune palette, fonts, and corners." },
+  { icon: ListChecks, title: "Sections", desc: "Toggle the pages you want." },
+  { icon: FolderGit2, title: "Projects", desc: "Add up to eight, or fill from examples." },
+  { icon: PackageCheck, title: "Export", desc: "Download a real Astro 6 zip — yours forever." },
 ];
 
 export default function Landing() {
@@ -83,6 +106,30 @@ export default function Landing() {
               Open the Forge <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+        </section>
+
+        <section className="px-6 max-w-6xl mx-auto py-20">
+          <div className="text-center mb-12">
+            <p className="eyebrow mb-3">How it works</p>
+            <h2 className="text-4xl md:text-5xl">Six steps. Ninety seconds.</h2>
+          </div>
+          <ol className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {STEPS.map((s, i) => (
+              <li key={s.title} className="card p-5 relative">
+                <span
+                  className="absolute top-3 right-3 font-mono text-[10px] text-mute"
+                  aria-hidden="true"
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <s.icon className="w-4 h-4 mb-3" style={{ color: "var(--color-accent)" }} />
+                <h3 className="font-body font-semibold text-sm mb-1" style={{ fontFamily: "var(--font-body)", letterSpacing: 0 }}>
+                  {s.title}
+                </h3>
+                <p className="text-xs text-mute m-0 leading-relaxed">{s.desc}</p>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <section className="px-6 max-w-6xl mx-auto py-20">
@@ -137,7 +184,7 @@ export default function Landing() {
         <section className="px-6 max-w-3xl mx-auto py-20 text-center">
           <h2 className="text-4xl md:text-5xl mb-6">Your code. Your domain. Your call.</h2>
           <p className="text-mute mb-8">
-            Five steps. Ninety seconds. A real Astro 6 project on disk, ready to deploy.
+            Six steps. Ninety seconds. A real Astro 6 project on disk, ready to deploy.
           </p>
           <Link href="/forge" className="btn btn-primary text-base px-7 py-3.5">
             Open the Forge <ArrowRight className="w-4 h-4" />
@@ -189,7 +236,7 @@ export default function Landing() {
             </div>
             <div>
               <p className="eyebrow mb-2">Built with</p>
-              <p>Astro 6 · Cloudflare · Tailwind v4 · shadcn Sera</p>
+              <p>Astro 6 · Cloudflare Workers · Tailwind v4 · React</p>
             </div>
           </div>
         </footer>

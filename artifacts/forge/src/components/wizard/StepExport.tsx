@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Download, Mail, Loader2 } from "lucide-react";
+import { Download, Mail, Loader2, CheckCircle2 } from "lucide-react";
 import { useWizard, getWizardState } from "../../lib/store";
 import { WizardStateSchema } from "../../lib/schemas";
 import { apiUrl } from "../../lib/api";
+import { PRESETS } from "../../lib/presets";
+import { FONT_PAIRS, RADIUS_SCALES } from "../../lib/typography";
 
 export default function StepExport() {
   const wizard = useWizard();
@@ -15,6 +17,21 @@ export default function StepExport() {
   const firstName = wizard.name.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
   const suggestedDomain = firstName ? `${firstName.replace(/[^a-z0-9-]/g, "")}.work` : "yoursite.work";
   const domain = wizard.domain || suggestedDomain;
+
+  const presetName = PRESETS.find((p) => p.id === wizard.preset)?.name ?? wizard.preset;
+  const fontName = FONT_PAIRS.find((f) => f.id === wizard.fontPair)?.name ?? wizard.fontPair;
+  const radiusName = RADIUS_SCALES.find((r) => r.id === wizard.radiusScale)?.name ?? wizard.radiusScale;
+  const enabledSections =
+    1 + (Object.values(wizard.sections).filter(Boolean).length);
+
+  const summary: { label: string; value: string }[] = [
+    { label: "Identity", value: `${wizard.name || "—"} · ${wizard.role || "—"}` },
+    { label: "Preset", value: presetName },
+    { label: "Palette", value: `${wizard.paletteName} · ${wizard.darkMode ? "Dark" : "Light"}` },
+    { label: "Type / corners", value: `${fontName} · ${radiusName}` },
+    { label: "Pages", value: `${enabledSections} ${enabledSections === 1 ? "page" : "pages"}` },
+    { label: "Projects", value: `${wizard.projects.length} of 8` },
+  ];
 
   const triggerDownload = async (sendEmail: boolean) => {
     setErr(null);
@@ -72,6 +89,23 @@ export default function StepExport() {
         </p>
       </div>
 
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <CheckCircle2 className="w-4 h-4" style={{ color: "var(--color-accent)" }} />
+          <p className="font-medium text-sm m-0">Your build summary</p>
+        </div>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          {summary.map((row) => (
+            <div key={row.label} className="flex justify-between gap-3 border-b border-app py-1.5 last:border-b-0 sm:[&:nth-last-child(-n+2)]:border-b-0">
+              <dt className="text-mute font-mono text-xs uppercase tracking-wider">{row.label}</dt>
+              <dd className="text-right font-medium truncate" style={{ color: "var(--color-text)" }}>
+                {row.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
       <label className="block">
         <span className="text-sm font-medium mb-1.5 block">Custom domain (optional)</span>
         <input
@@ -83,7 +117,7 @@ export default function StepExport() {
           data-testid="input-domain"
         />
         <span className="text-xs text-mute mt-1 block">
-          We'll prefill DEPLOY.md with this. You can deploy to a .workers.dev URL first.
+          We'll prefill <code className="font-mono">DEPLOY.md</code> with this. You can deploy to a free <code className="font-mono">.workers.dev</code> URL first.
         </span>
       </label>
 

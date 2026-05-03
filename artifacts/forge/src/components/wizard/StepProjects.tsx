@@ -1,9 +1,10 @@
-import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown, Sparkles } from "lucide-react";
 import { useWizard } from "../../lib/store";
 
 export default function StepProjects() {
   const projects = useWizard((s) => s.projects);
   const addProject = useWizard((s) => s.addProject);
+  const addExampleProjects = useWizard((s) => s.addExampleProjects);
   const updateProject = useWizard((s) => s.updateProject);
   const removeProject = useWizard((s) => s.removeProject);
   const moveProject = useWizard((s) => s.moveProject);
@@ -26,8 +27,28 @@ export default function StepProjects() {
       </div>
 
       {projects.length === 0 && (
-        <div className="card p-6 text-center text-sm text-mute">
-          No projects yet. Add up to 8, or skip — your zip will include an example you can edit.
+        <div className="card p-8 text-center space-y-4">
+          <p className="text-sm text-mute m-0">
+            No projects yet. Add up to 8, or skip — your zip will include an example you can edit.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <button
+              type="button"
+              onClick={addProject}
+              className="btn btn-primary"
+              data-testid="button-add-first-project"
+            >
+              <Plus className="w-4 h-4" /> Add a project
+            </button>
+            <button
+              type="button"
+              onClick={addExampleProjects}
+              className="btn btn-ghost"
+              data-testid="button-add-examples"
+            >
+              <Sparkles className="w-4 h-4" /> Fill with examples
+            </button>
+          </div>
         </div>
       )}
 

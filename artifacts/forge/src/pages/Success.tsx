@@ -1,7 +1,8 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import { Copy, Check, ExternalLink } from "lucide-react";
+import { Copy, Check, FileText, Layers, FolderGit2, Globe } from "lucide-react";
 import { useWizard } from "../lib/store";
+import { PRESETS } from "../lib/presets";
 
 function CodeBox({ code, testId }: { code: string; testId: string }) {
   const [copied, setCopied] = useState(false);
@@ -75,8 +76,23 @@ function Confetti() {
 
 export default function Success() {
   const name = useWizard((s) => s.name);
+  const preset = useWizard((s) => s.preset);
+  const projects = useWizard((s) => s.projects);
+  const sections = useWizard((s) => s.sections);
+  const domain = useWizard((s) => s.domain);
   const reset = useWizard((s) => s.reset);
-  const slug = (name || "you").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || "your";
+  const [, navigate] = useLocation();
+  const slug =
+    (name || "you").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || "your";
+  const presetName = PRESETS.find((p) => p.id === preset)?.name ?? preset;
+  const enabledSections = 1 + Object.values(sections).filter(Boolean).length;
+
+  const inventory = [
+    { icon: Layers, label: `${presetName} preset`, sub: "complete visual identity wired up" },
+    { icon: FileText, label: `${enabledSections} ${enabledSections === 1 ? "page" : "pages"}`, sub: "Astro routes + layouts" },
+    { icon: FolderGit2, label: `${projects.length} ${projects.length === 1 ? "project" : "projects"}`, sub: "Markdown + Zod-validated frontmatter" },
+    { icon: Globe, label: domain || "DEPLOY.md", sub: "Cloudflare-ready, custom domain steps inside" },
+  ];
 
   return (
     <>
@@ -88,6 +104,7 @@ export default function Success() {
           type="button"
           onClick={() => {
             reset();
+            navigate("/forge");
           }}
           className="btn btn-ghost text-sm"
           data-testid="button-build-another"
@@ -99,7 +116,22 @@ export default function Success() {
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
         <p className="eyebrow mb-4">Success</p>
         <h1 className="text-4xl md:text-6xl mb-4">Your portfolio is downloaded.</h1>
-        <p className="text-mute text-lg mb-12">Here's what to do next.</p>
+        <p className="text-mute text-lg mb-10">Here's what's in the zip — and what to do next.</p>
+
+        <div className="card p-5 mb-10">
+          <p className="font-medium text-sm mb-3">What you got</p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 m-0 list-none p-0">
+            {inventory.map((item) => (
+              <li key={item.label} className="flex items-start gap-3">
+                <item.icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--color-accent)" }} />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium m-0 truncate">{item.label}</p>
+                  <p className="text-xs text-mute m-0">{item.sub}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <div className="space-y-6">
           <div className="card p-6">
@@ -119,7 +151,7 @@ export default function Success() {
               <h2 className="text-xl">Run locally</h2>
             </div>
             <CodeBox code="pnpm dev" testId="code-dev" />
-            <p className="text-sm text-mute mt-3">Visit http://localhost:4321.</p>
+            <p className="text-sm text-mute mt-3">Visit <code className="font-mono">http://localhost:4321</code>.</p>
           </div>
 
           <div className="card p-6">
@@ -132,13 +164,14 @@ export default function Success() {
               testId="code-deploy"
             />
             <p className="text-sm text-mute mt-3">
-              Full walkthrough in <code className="font-mono">DEPLOY.md</code> inside your zip.
+              Full walkthrough — including custom domain setup — lives in{" "}
+              <code className="font-mono">DEPLOY.md</code> inside your zip.
             </p>
           </div>
         </div>
 
         <div className="mt-16 text-center text-sm text-mute">
-          Need help? <a href="https://forge.zacgibson.work" className="inline-flex items-center gap-1" style={{ color: "var(--color-accent)" }}>Watch the deploy walkthrough <ExternalLink className="w-3 h-3" /></a>
+          Tip: <code className="font-mono">README.md</code> in the zip explains every file. Have fun.
         </div>
       </main>
     </>
