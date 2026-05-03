@@ -478,5 +478,11 @@
     transition-duration: 0.001s !important;
   }
   .aurora-bg, .hero-mesh { animation: none; }
-  .marquee-track { animation: none; }
+  /* Keep the marquee running even with reduced motion — it's a steady,
+     predictable horizontal scroll (low vestibular impact) and the brand
+     identity literally is "Forge moves". Slow it down a touch for comfort. */
+  .marquee-wrap .marquee-track {
+    animation: marquee 60s linear infinite !important;
+    animation-duration: 60s !important;
+  }
 }
