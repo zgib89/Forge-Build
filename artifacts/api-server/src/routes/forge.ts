@@ -82,16 +82,20 @@ router.post("/forge/preview", (req, res) => {
 const EmailPayloadSchema = z.object({
   email: z.string().email().max(254),
   source: z.string().max(40).optional(),
+  state: WizardStateSchema.optional(),
 });
 
 router.post("/forge/email", (req, res) => {
   const parsed = EmailPayloadSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ ok: false, error: "Invalid email payload" });
+    res.status(400).json({ ok: false, error: parsed.error.flatten() });
     return;
   }
-  const { email } = parsed.data;
-  logger.info({ email: email ? "captured" : "skipped" }, "forge email");
+  const { email, state } = parsed.data;
+  logger.info(
+    { email: "captured", preset: state?.preset, hasState: !!state },
+    "forge email",
+  );
   res.json({ ok: true });
 });
 

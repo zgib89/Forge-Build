@@ -33,7 +33,7 @@ export default function StepExport() {
         await fetch(apiUrl(`/api/forge/email`), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: wizard.email }),
+          body: JSON.stringify({ email: wizard.email, state: parsed.data }),
         });
       }
       const res = await fetch(apiUrl(`/api/forge/export`), {
@@ -122,18 +122,17 @@ export default function StepExport() {
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
           {busy ? "Generating..." : "Just download"}
         </button>
-        {wizard.email && (
-          <button
-            type="button"
-            onClick={() => triggerDownload(true)}
-            disabled={busy}
-            className="btn btn-ghost flex-1 text-base py-3"
-            data-testid="button-email-download"
-          >
-            <Mail className="w-4 h-4" />
-            Email + Download
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => triggerDownload(true)}
+          disabled={busy || !wizard.email}
+          className="btn btn-ghost flex-1 text-base py-3"
+          data-testid="button-email-download"
+          title={!wizard.email ? "Enter an email above to enable" : undefined}
+        >
+          <Mail className="w-4 h-4" />
+          Email + Download
+        </button>
       </div>
     </div>
   );
