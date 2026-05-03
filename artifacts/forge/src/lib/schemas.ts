@@ -12,14 +12,18 @@ export const ProjectSchema = z.object({
   coverImage: z.string().optional(),
 });
 
+const CSS_COLOR_RE =
+  /^(#[0-9a-fA-F]{3,8}|rgb\(\s*[\d.\s,/%]+\)|rgba\(\s*[\d.\s,/%]+\)|hsl\(\s*[\d.\s,/%deg]+\)|hsla\(\s*[\d.\s,/%deg]+\)|oklch\(\s*[\d.\s%]+(?:\s*\/\s*[\d.%]+)?\)|oklab\(\s*[-\d.\s%]+(?:\s*\/\s*[\d.%]+)?\)|[a-zA-Z]{3,30})$/;
+const cssColor = z.string().max(80).regex(CSS_COLOR_RE);
+
 export const PaletteSchema = z.object({
-  bg: z.string(),
-  surface: z.string(),
-  border: z.string(),
-  text: z.string(),
-  mute: z.string(),
-  accent: z.string(),
-  accent2: z.string().optional(),
+  bg: cssColor,
+  surface: cssColor,
+  border: cssColor,
+  text: cssColor,
+  mute: cssColor,
+  accent: cssColor,
+  accent2: cssColor.optional(),
 });
 
 export const WizardStateSchema = z.object({

@@ -48,6 +48,7 @@ router.get("/forge/preview", (req, res) => {
   }
   const parsed = WizardStateSchema.safeParse(parsedJson);
   if (!parsed.success) {
+    logger.warn({ err: parsed.error.flatten() }, "preview validation failed");
     res
       .status(400)
       .send(
@@ -64,6 +65,7 @@ router.get("/forge/preview", (req, res) => {
 router.post("/forge/preview", (req, res) => {
   const parsed = WizardStateSchema.safeParse(req.body);
   if (!parsed.success) {
+    logger.warn({ err: parsed.error.flatten() }, "preview validation failed");
     res
       .status(400)
       .send(
