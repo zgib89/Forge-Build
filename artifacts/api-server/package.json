@@ -8,7 +8,8 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:portfolio-build": "tsx ./scripts/test-portfolio-build.ts"
+    "test:portfolio-build": "tsx ./scripts/test-portfolio-build.ts",
+    "test:preview-snapshot": "tsx ./scripts/test-preview-snapshot.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
