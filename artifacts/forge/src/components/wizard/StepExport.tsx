@@ -17,6 +17,15 @@ import { WizardStateSchema } from "../../lib/schemas";
 import { apiUrl } from "../../lib/api";
 import { PRESETS } from "../../lib/presets";
 import { FONT_PAIRS, RADIUS_SCALES } from "../../lib/typography";
+import { toast } from "../../lib/toast";
+
+const DEPLOY_STAGES = [
+  { id: "validate", label: "Validating config" },
+  { id: "render", label: "Rendering routes" },
+  { id: "upload", label: "Uploading to Cloudflare" },
+  { id: "live", label: "Going live" },
+] as const;
+type DeployStageId = (typeof DEPLOY_STAGES)[number]["id"];
 
 interface RegistrarOption {
   id: string;
@@ -49,6 +58,7 @@ export default function StepExport() {
   const [deployErr, setDeployErr] = useState<string | null>(null);
   const [domainCheck, setDomainCheck] = useState<DomainCheck>({ status: "idle" });
   const [cfConfigured, setCfConfigured] = useState<boolean | null>(null);
+  const [deployStage, setDeployStage] = useState<DeployStageId | null>(null);
 
   const firstName = wizard.name.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
   const suggestedDomain = firstName ? `${firstName.replace(/[^a-z0-9-]/g, "")}.work` : "yoursite.work";
@@ -176,12 +186,19 @@ export default function StepExport() {
   const triggerDeploy = async () => {
     setDeployErr(null);
     setDeploying(true);
+    setDeployStage("validate");
     try {
       const data = buildAndValidateState();
       const slug = wizard.deploySlug && /^[a-z0-9]{6,16}$/.test(wizard.deploySlug)
         ? wizard.deploySlug
         : makeDeploySlug();
       if (slug !== wizard.deploySlug) patch({ deploySlug: slug });
+      // Visual progression — stages 1 & 2 are local, stage 3 covers the network round-trip,
+      // stage 4 fires once Cloudflare returns.
+      await new Promise((r) => setTimeout(r, 300));
+      setDeployStage("render");
+      await new Promise((r) => setTimeout(r, 350));
+      setDeployStage("upload");
       const res = await fetch(apiUrl(`/api/forge/deploy/cloudflare`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -191,12 +208,18 @@ export default function StepExport() {
       if (!res.ok || !j.ok) {
         throw new Error(j.error || `Deploy failed (${res.status})`);
       }
+      setDeployStage("live");
       patch({ deployedUrl: j.url });
+      toast.success("Live on Cloudflare", j.url.replace(/^https?:\/\//, ""));
+      // Tiny pause so users see the final checkmark before nav.
+      await new Promise((r) => setTimeout(r, 450));
       navigate("/success");
     } catch (e) {
       setDeployErr(e instanceof Error ? e.message : "Deploy failed");
+      toast.error("Deploy failed", e instanceof Error ? e.message : undefined);
     } finally {
       setDeploying(false);
+      setDeployStage(null);
     }
   };
 
@@ -368,6 +391,57 @@ export default function StepExport() {
               </a>
             </span>
           </div>
+        )}
+        {deploying && deployStage && (
+          <ol
+            className="space-y-2 text-xs"
+            data-testid="deploy-progress"
+            aria-live="polite"
+          >
+            {DEPLOY_STAGES.map((stage, i) => {
+              const currentIdx = DEPLOY_STAGES.findIndex((s) => s.id === deployStage);
+              const done = i < currentIdx;
+              const active = i === currentIdx;
+              return (
+                <li
+                  key={stage.id}
+                  className="flex items-center gap-2.5"
+                  style={{
+                    color: done ? "var(--color-accent)" : active ? "var(--color-text)" : "var(--color-text-mute)",
+                    opacity: done || active ? 1 : 0.55,
+                    transition: "opacity 200ms, color 200ms",
+                  }}
+                  data-testid={`deploy-stage-${stage.id}`}
+                >
+                  <span
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: 999,
+                      display: "inline-grid",
+                      placeItems: "center",
+                      background: done
+                        ? "var(--color-accent)"
+                        : active
+                          ? "color-mix(in oklch, var(--color-accent) 20%, transparent)"
+                          : "var(--color-surface-2, var(--color-surface))",
+                      border: `1px solid ${done || active ? "var(--color-accent)" : "var(--color-border)"}`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {done ? (
+                      <CheckCircle2 className="w-3 h-3" style={{ color: "var(--color-bg)" }} />
+                    ) : active ? (
+                      <Loader2 className="w-3 h-3 animate-spin" style={{ color: "var(--color-accent)" }} />
+                    ) : (
+                      <span style={{ width: 5, height: 5, borderRadius: 999, background: "var(--color-border)" }} />
+                    )}
+                  </span>
+                  <span>{stage.label}</span>
+                </li>
+              );
+            })}
+          </ol>
         )}
         <button
           type="button"

@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useWizard } from "../lib/store";
+import { useWizard, getWizardState } from "../lib/store";
 import StepIdentity from "../components/wizard/StepIdentity";
 import StepPreset from "../components/wizard/StepPreset";
 import StepPalette from "../components/wizard/StepPalette";
@@ -9,7 +9,9 @@ import StepProjects from "../components/wizard/StepProjects";
 import StepExport from "../components/wizard/StepExport";
 import PreviewFrame from "../components/wizard/PreviewFrame";
 import ThemeToggle from "../components/ThemeToggle";
-import { ArrowLeft, ArrowRight, Check, Command } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Command, Share2 } from "lucide-react";
+import { encodeConfig } from "../lib/shareConfig";
+import { toast } from "../lib/toast";
 
 const STEPS = [
   { label: "Identity", component: StepIdentity },
@@ -127,6 +129,29 @@ export default function Wizard() {
             <span className="text-sm text-mute font-mono hidden md:inline">
               Step {step + 1} of {STEPS.length} · {STEPS[step].label}
             </span>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const enc = encodeConfig(getWizardState(useWizard.getState()));
+                  await navigator.clipboard.writeText(enc.url);
+                  toast.success(
+                    "Share link copied",
+                    enc.strippedAssets
+                      ? "Cover images excluded so the URL stays small."
+                      : "Anyone with this link gets a pre-filled wizard.",
+                  );
+                } catch (e) {
+                  toast.error("Couldn't copy link", e instanceof Error ? e.message : "clipboard blocked");
+                }
+              }}
+              className="btn btn-ghost text-xs hidden md:inline-flex"
+              title="Copy shareable config link"
+              aria-label="Copy shareable config link"
+              data-testid="button-share"
+            >
+              <Share2 className="w-3 h-3" /> <span>Share</span>
+            </button>
             <button
               type="button"
               onClick={() => {

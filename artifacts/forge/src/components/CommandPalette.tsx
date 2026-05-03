@@ -15,9 +15,12 @@ import {
   PackageCheck,
   ExternalLink,
 } from "lucide-react";
-import { useWizard } from "../lib/store";
+import { useWizard, getWizardState } from "../lib/store";
 import { useTheme } from "../hooks/useTheme";
 import { toast } from "../lib/toast";
+import { confirmDialog } from "../lib/confirm";
+import { encodeConfig } from "../lib/shareConfig";
+import { Link2, Keyboard } from "lucide-react";
 
 interface Command {
   id: string;
@@ -130,13 +133,54 @@ export default function CommandPalette() {
         },
       },
       {
+        id: "share-link",
+        group: "Actions",
+        title: "Copy shareable config link",
+        icon: Link2,
+        keywords: "share copy url link config",
+        run: async () => {
+          try {
+            const state = getWizardState(useWizard.getState());
+            const enc = encodeConfig(state);
+            await navigator.clipboard.writeText(enc.url);
+            toast.success(
+              "Link copied",
+              enc.strippedAssets
+                ? "Cover images excluded — recipients will see your text config."
+                : "Anyone with this link will land on a pre-filled wizard.",
+            );
+          } catch (e) {
+            toast.error("Couldn't copy link", e instanceof Error ? e.message : "clipboard blocked");
+          }
+        },
+      },
+      {
+        id: "show-shortcuts",
+        group: "Actions",
+        title: "Show keyboard shortcuts",
+        icon: Keyboard,
+        keywords: "shortcuts help kbd keyboard",
+        run: () => {
+          // Defer so palette can fully close before help opens
+          setTimeout(() => {
+            window.dispatchEvent(new KeyboardEvent("keydown", { key: "?", bubbles: true }));
+          }, 50);
+        },
+      },
+      {
         id: "reset",
         group: "Actions",
         title: "Reset wizard (clear all data)",
         icon: Trash2,
         keywords: "reset clear delete restart",
-        run: () => {
-          if (window.confirm("Reset the wizard? Your in-progress data will be cleared.")) {
+        run: async () => {
+          const ok = await confirmDialog({
+            title: "Reset the wizard?",
+            description: "Your in-progress data will be cleared. This can't be undone.",
+            confirmText: "Reset everything",
+            danger: true,
+          });
+          if (ok) {
             reset();
             navigate("/forge");
             toast.info("Wizard reset");

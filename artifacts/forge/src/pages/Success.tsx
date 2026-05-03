@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import { Copy, Check, FileText, Layers, FolderGit2, Globe, ExternalLink, Rocket } from "lucide-react";
+import { Copy, Check, FileText, Layers, FolderGit2, Globe, ExternalLink, Rocket, Server } from "lucide-react";
 import { useWizard } from "../lib/store";
 import { PRESETS } from "../lib/presets";
 import ThemeToggle from "../components/ThemeToggle";
@@ -209,6 +209,54 @@ export default function Success() {
             </p>
           </div>
         </div>
+
+        {domain && !domain.endsWith(".pages.dev") && (
+          <div className="card p-6 mt-8" data-testid="card-dns-guidance">
+            <div className="flex items-center gap-2 mb-4">
+              <Server className="w-4 h-4" style={{ color: "var(--color-accent)" }} />
+              <h2 className="text-xl m-0">Point <span className="font-mono">{domain}</span> at your site</h2>
+            </div>
+            <p className="text-sm text-mute mb-5 m-0">
+              After your registrar finishes propagating, add these two records in your DNS provider
+              (or, easier: transfer DNS to Cloudflare and they'll do it automatically when you add the
+              custom domain in the Pages dashboard).
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm" style={{ borderCollapse: "collapse" }}>
+                <thead>
+                  <tr className="text-left text-xs text-mute font-mono uppercase tracking-wider">
+                    <th className="py-2 pr-4">Type</th>
+                    <th className="py-2 pr-4">Name</th>
+                    <th className="py-2 pr-4">Value</th>
+                    <th className="py-2">TTL</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-xs">
+                  <tr className="border-t border-app">
+                    <td className="py-2 pr-4">CNAME</td>
+                    <td className="py-2 pr-4">@ (or {domain.split(".")[0]})</td>
+                    <td className="py-2 pr-4">
+                      {deployedUrl ? deployedUrl.replace(/^https?:\/\//, "").replace(/\/$/, "") : "your-site.pages.dev"}
+                    </td>
+                    <td className="py-2">Auto</td>
+                  </tr>
+                  <tr className="border-t border-app">
+                    <td className="py-2 pr-4">CNAME</td>
+                    <td className="py-2 pr-4">www</td>
+                    <td className="py-2 pr-4">
+                      {deployedUrl ? deployedUrl.replace(/^https?:\/\//, "").replace(/\/$/, "") : "your-site.pages.dev"}
+                    </td>
+                    <td className="py-2">Auto</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-mute mt-4 m-0">
+              In Cloudflare Pages → your project → <strong>Custom domains</strong> → <strong>Set up a custom domain</strong>,
+              enter <span className="font-mono">{domain}</span>. Cloudflare auto-provisions SSL within ~60 seconds.
+            </p>
+          </div>
+        )}
 
         <div className="mt-16 text-center text-sm text-mute">
           Tip: <code className="font-mono">README.md</code> in the zip explains every file. Have fun.
