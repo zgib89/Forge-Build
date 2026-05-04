@@ -1,12 +1,13 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import { Copy, Check, FileText, Layers, FolderGit2, Globe, ExternalLink, Rocket, Server } from "lucide-react";
+import { Copy, Check, FileText, Layers, FolderGit2, Globe, ExternalLink, Rocket, Server, ChevronDown, MousePointerClick, Github, Terminal } from "lucide-react";
 import { useWizard } from "../lib/store";
 import { PRESETS } from "../lib/presets";
 import ThemeToggle from "../components/ThemeToggle";
 
 function CodeBox({ code, testId }: { code: string; testId: string }) {
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
   return (
     <div className="relative">
       <pre
@@ -17,16 +18,34 @@ function CodeBox({ code, testId }: { code: string; testId: string }) {
       </pre>
       <button
         type="button"
-        onClick={() => {
-          navigator.clipboard.writeText(code);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1200);
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(code);
+            setCopyError(false);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1200);
+          } catch {
+            setCopied(false);
+            setCopyError(true);
+            setTimeout(() => setCopyError(false), 1800);
+          }
         }}
         className="absolute top-2 right-2 btn btn-ghost text-xs px-2 py-1"
+        aria-label={`Copy command: ${testId.replace(/^code-/, "")}`}
+        title="Copy command"
         data-testid={testId}
       >
         {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
       </button>
+      {copyError && (
+        <span
+          className="absolute right-2 bottom-2 text-[10px] font-mono"
+          style={{ color: "var(--color-bg)" }}
+          role="status"
+        >
+          copy blocked
+        </span>
+      )}
     </div>
   );
 }
@@ -72,6 +91,198 @@ function Confetti() {
         })}
       </div>
     </>
+  );
+}
+
+function DeployGuide({ slug }: { slug: string }) {
+  const [path, setPath] = useState<"github" | "cli">("github");
+  return (
+    <div className="space-y-5">
+      <div className="card p-5">
+        <p className="font-medium text-sm mb-1">Get your portfolio online — pick a path</p>
+        <p className="text-xs text-mute m-0">
+          Both paths are free. Both end with a real URL (like <code className="font-mono">your-name.pages.dev</code>) you can share.
+        </p>
+        <div className="flex gap-2 mt-4" role="tablist" aria-label="Deployment path">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={path === "github"}
+            aria-controls="deploy-path-github"
+            onClick={() => setPath("github")}
+            className="btn text-sm flex-1"
+            style={{
+              background: path === "github" ? "var(--color-text)" : "transparent",
+              color: path === "github" ? "var(--color-bg)" : "var(--color-text)",
+              border: "1px solid var(--color-border)",
+            }}
+            data-testid="tab-path-github"
+          >
+            <MousePointerClick className="w-4 h-4" />
+            <span className="ml-1.5">No coding (GitHub + Cloudflare)</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={path === "cli"}
+            aria-controls="deploy-path-cli"
+            onClick={() => setPath("cli")}
+            className="btn text-sm flex-1"
+            style={{
+              background: path === "cli" ? "var(--color-text)" : "transparent",
+              color: path === "cli" ? "var(--color-bg)" : "var(--color-text)",
+              border: "1px solid var(--color-border)",
+            }}
+            data-testid="tab-path-cli"
+          >
+            <Terminal className="w-4 h-4" />
+            <span className="ml-1.5">Command line (faster if you've done it before)</span>
+          </button>
+        </div>
+      </div>
+
+      {path === "github" && (
+        <div className="space-y-4" id="deploy-path-github" role="tabpanel" data-testid="deploy-path-github">
+          <DeployStep n="01" title="Unzip the file you just downloaded">
+            <p className="text-sm text-mute m-0">
+              Find <code className="font-mono">{slug}-portfolio.zip</code> in your Downloads folder.
+              Double-click it (Mac) or right-click → "Extract All" (Windows).
+            </p>
+            <p className="text-sm text-mute mt-2 m-0">
+              You'll get a folder called <code className="font-mono">{slug}-portfolio</code>.
+            </p>
+          </DeployStep>
+
+          <DeployStep n="02" title="Make a free GitHub account (skip if you have one)">
+            <p className="text-sm text-mute m-0">
+              GitHub is where your portfolio's code will live.{" "}
+              <a
+                href="https://github.com/signup"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Sign up here →
+              </a>
+            </p>
+          </DeployStep>
+
+          <DeployStep n="03" title="Upload your folder to GitHub">
+            <p className="text-sm text-mute m-0 mb-3">
+              Easiest way: download <strong>GitHub Desktop</strong> (free, no command line needed).
+            </p>
+            <ol className="text-sm text-mute space-y-1.5 m-0 pl-5 list-decimal">
+              <li>
+                Get GitHub Desktop:{" "}
+                <a
+                  href="https://desktop.github.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  desktop.github.com
+                </a>
+              </li>
+              <li>Open it and sign in with your GitHub account.</li>
+              <li>
+                File → <strong>Add Local Repository</strong> → pick the <code className="font-mono">{slug}-portfolio</code> folder.
+              </li>
+              <li>It'll say "this isn't a Git repo, want to create one?" → Yes.</li>
+              <li>Type a commit message (e.g. "first commit") → click <strong>Commit to main</strong>.</li>
+              <li>
+                Click <strong>Publish repository</strong> (top right). Uncheck "Keep this code private" if you want others to see it. Click Publish.
+              </li>
+            </ol>
+          </DeployStep>
+
+          <DeployStep n="04" title="Make a free Cloudflare account">
+            <p className="text-sm text-mute m-0">
+              Cloudflare hosts your portfolio for free.{" "}
+              <a
+                href="https://dash.cloudflare.com/sign-up"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Sign up here →
+              </a>
+            </p>
+          </DeployStep>
+
+          <DeployStep n="05" title="Connect your repo to Cloudflare Pages">
+            <p className="text-sm text-mute m-0 mb-3">
+              Once signed in:
+            </p>
+            <ol className="text-sm text-mute space-y-1.5 m-0 pl-5 list-decimal">
+              <li>Left sidebar → <strong>Workers &amp; Pages</strong>.</li>
+              <li>
+                Click <strong>Create</strong> → <strong>Pages</strong> tab → <strong>Connect to Git</strong>.
+              </li>
+              <li>Authorize Cloudflare to read GitHub. Pick the repo you just published.</li>
+              <li>
+                Build settings: pick the <strong>Astro</strong> framework preset. Build command:{" "}
+                <code className="font-mono">npm run build</code>. Output:{" "}
+                <code className="font-mono">dist</code>.
+              </li>
+              <li>
+                Click <strong>Save and Deploy</strong>. Wait ~2 minutes. You're live.
+              </li>
+            </ol>
+            <p className="text-sm mt-3 m-0" style={{ color: "var(--color-accent)" }}>
+              You'll get a URL like <code className="font-mono">your-portfolio.pages.dev</code>. Share it.
+            </p>
+          </DeployStep>
+
+          <div className="card p-4 text-xs text-mute">
+            Want to use your own domain (like <code className="font-mono">yourname.com</code>)? In the Cloudflare Pages
+            dashboard for your project → <strong>Custom domains</strong> → <strong>Set up a custom domain</strong>. Cloudflare walks you through it.
+          </div>
+        </div>
+      )}
+
+      {path === "cli" && (
+        <div className="space-y-4" id="deploy-path-cli" role="tabpanel" data-testid="deploy-path-cli">
+          <p className="text-xs text-mute">
+            Requires Node.js 22+ and a Cloudflare account.
+          </p>
+          <DeployStep n="01" title="Unzip & install">
+            <CodeBox
+              code={`cd ~/Downloads && unzip ${slug}-portfolio.zip && cd ${slug}-portfolio && pnpm install`}
+              testId="code-install"
+            />
+          </DeployStep>
+          <DeployStep n="02" title="Run locally to preview">
+            <CodeBox code="pnpm dev" testId="code-dev" />
+            <p className="text-sm text-mute mt-3 m-0">Visit <code className="font-mono">http://localhost:4321</code>.</p>
+          </DeployStep>
+          <DeployStep n="03" title="Deploy to Cloudflare">
+            <CodeBox
+              code={`pnpm dlx wrangler login\npnpm build\npnpm wrangler deploy`}
+              testId="code-deploy"
+            />
+            <p className="text-sm text-mute mt-3 m-0">
+              Full walkthrough including custom domains lives in{" "}
+              <code className="font-mono">DEPLOY.md</code> inside your zip.
+            </p>
+          </DeployStep>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DeployStep({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
+  return (
+    <div className="card p-5">
+      <div className="flex items-baseline gap-3 mb-3">
+        <span className="font-mono text-xs text-mute">{n}</span>
+        <h3 className="text-base m-0 font-medium">{title}</h3>
+      </div>
+      {children}
+    </div>
   );
 }
 
@@ -173,42 +384,7 @@ export default function Success() {
           </ul>
         </div>
 
-        <div className="space-y-6">
-          <div className="card p-6">
-            <div className="flex items-baseline gap-3 mb-3">
-              <span className="font-mono text-xs text-mute">01</span>
-              <h2 className="text-xl">Unzip & install</h2>
-            </div>
-            <CodeBox
-              code={`cd ~/Downloads && unzip ${slug}-portfolio.zip && cd ${slug}-portfolio && pnpm install`}
-              testId="code-install"
-            />
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-baseline gap-3 mb-3">
-              <span className="font-mono text-xs text-mute">02</span>
-              <h2 className="text-xl">Run locally</h2>
-            </div>
-            <CodeBox code="pnpm dev" testId="code-dev" />
-            <p className="text-sm text-mute mt-3">Visit <code className="font-mono">http://localhost:4321</code>.</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-baseline gap-3 mb-3">
-              <span className="font-mono text-xs text-mute">03</span>
-              <h2 className="text-xl">Deploy to Cloudflare</h2>
-            </div>
-            <CodeBox
-              code={`pnpm dlx wrangler login\npnpm build\npnpm wrangler deploy`}
-              testId="code-deploy"
-            />
-            <p className="text-sm text-mute mt-3">
-              Full walkthrough — including custom domain setup — lives in{" "}
-              <code className="font-mono">DEPLOY.md</code> inside your zip.
-            </p>
-          </div>
-        </div>
+        {!deployedUrl && <DeployGuide slug={slug} />}
 
         {domain && !domain.endsWith(".pages.dev") && (
           <div className="card p-6 mt-8" data-testid="card-dns-guidance">

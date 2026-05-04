@@ -8,7 +8,11 @@ export const minimalistTemplates: Record<string, string> = {
   --color-text: {{state.palette.text}};
   --color-mute: {{state.palette.mute}};
   --color-accent: {{state.palette.accent}};
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --color-accent-2: {{#if state.palette.accent2}}{{state.palette.accent2}}{{else}}{{state.palette.accent}}{{/if}};
+  --font-display: {{font state.fontPair "display"}};
+  --font-body: {{font state.fontPair "body"}};
+  --font-mono: {{font state.fontPair "mono"}};
+{{fxVars state}}
 }
 
 @layer base {
@@ -16,7 +20,7 @@ export const minimalistTemplates: Record<string, string> = {
   html {
     background: var(--color-bg);
     color: var(--color-text);
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 14px;
     -webkit-font-smoothing: antialiased;
   }
@@ -27,6 +31,7 @@ export const minimalistTemplates: Record<string, string> = {
 }
 
 @view-transition { navigation: auto; }
+{{fxRules state}}
 
 .cursor::after {
   content: "_";
@@ -59,7 +64,7 @@ const { title = "{{jsonStr state.name}}", description = "{{jsonStr state.tagline
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="{{font state.fontPair "link"}}" rel="stylesheet" />
     <title>{title}</title>
     <meta name="description" content={description} />
   </head>

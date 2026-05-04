@@ -1,12 +1,12 @@
 import { useWizard } from "../../lib/store";
 
 const TOGGLES: { key: keyof ReturnType<typeof useWizard.getState>["sections"]; label: string; desc: string }[] = [
-  { key: "projects", label: "Projects", desc: "Showcase your work — recommended." },
-  { key: "about", label: "About", desc: "Long-form bio page." },
+  { key: "projects", label: "Selected work", desc: "Proof, projects, wins, campaigns, jobs, or cases — recommended." },
+  { key: "about", label: "About", desc: "Long-form bio, background, and working style." },
   { key: "contact", label: "Contact", desc: "How to reach you." },
-  { key: "writing", label: "Writing / Notes", desc: "Markdown notes index." },
+  { key: "writing", label: "Writing / Notes", desc: "Articles, updates, research, or process notes." },
   { key: "now", label: "Now page", desc: "What you're working on." },
-  { key: "uses", label: "Uses page", desc: "Tools and gear." },
+  { key: "uses", label: "Tools / Resources", desc: "Tools, gear, methods, services, or resources you recommend." },
 ];
 
 const FOOTER_STYLES: { value: "minimal" | "detailed" | "credits"; label: string; desc: string }[] = [

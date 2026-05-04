@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Test User — Preview</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 </head>
 <body>
 <style>
@@ -20,12 +20,21 @@
   --font-display: 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --fx-glow: 1;
+  --fx-edge: 1;
+  --fx-hover-depth: 2px;
+  --fx-grain: 0;
+  --fx-glass: 0;
+  --fx-marquee-speed: 30s;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--color-bg); color: var(--color-text); -webkit-font-smoothing: antialiased; }
 a { color: inherit; text-decoration: none; }
 ::selection { background: var(--color-accent); color: var(--color-bg); }
+
+
+
 
   body { font-family: var(--font-body); overflow-x: hidden; }
   h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 200; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; margin: 0; }
@@ -35,7 +44,7 @@ a { color: inherit; text-decoration: none; }
     radial-gradient(50% 50% at 80% 20%, var(--color-accent-2) 0%, transparent 60%),
     radial-gradient(70% 70% at 50% 90%, var(--color-accent) 0%, transparent 70%),
     var(--color-bg);
-    filter: blur(80px) saturate(1.2); opacity: 0.7;
+    filter: blur(calc(52px + var(--fx-glow) * 10px)) saturate(calc(1 + var(--fx-glow) * .08)); opacity: calc(.42 + var(--fx-glow) * .08);
     animation: drift 40s ease-in-out infinite alternate; }
   @keyframes drift { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(-5%, 5%, 0) scale(1.1); } }
   main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; position: relative; }
@@ -54,8 +63,8 @@ a { color: inherit; text-decoration: none; }
   .work h2 { font-size: 2.25rem; margin-bottom: 2rem; }
   .grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
   @media (min-width: 768px) { .grid { grid-template-columns: 1fr 1fr; } }
-  .bento-card { display: block; background: color-mix(in oklch, var(--color-surface) 60%, transparent); border: 1px solid var(--color-border); border-radius: 1.5rem; padding: 2rem; backdrop-filter: blur(12px); transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), border-color 300ms; }
-  .bento-card:hover { transform: translateY(-4px); border-color: var(--color-accent); }
+  .bento-card { display: block; background: color-mix(in oklch, var(--color-surface) 60%, transparent); border: 1px solid var(--color-border); border-radius: 1.5rem; padding: 2rem; backdrop-filter: blur(calc(8px + var(--fx-glass) * 5px)); transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), border-color 300ms, box-shadow 300ms; box-shadow: 0 0 calc(var(--fx-edge) * 8px) color-mix(in oklch, var(--color-accent) calc(var(--fx-glow) * 5%), transparent); }
+  .bento-card:hover { transform: translateY(calc(-1 * var(--fx-hover-depth))); border-color: var(--color-accent); }
   .bento-card .num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-accent); }
   .bento-card h3 { font-size: 1.5rem; margin: 0.75rem 0 0.5rem; font-weight: 300; }
   .bento-card p { color: var(--color-mute); }

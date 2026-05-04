@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { PRESETS, type PresetId, type PaletteDef } from "./presets";
 import type { Project, WizardState } from "./schemas";
+import { getCareerProfile } from "./professions";
 import {
   PRESET_FONT_DEFAULTS,
   PRESET_RADIUS_DEFAULTS,
@@ -34,6 +35,7 @@ const initial: WizardState = {
   role: "",
   tagline: "",
   location: "",
+  careerCategory: "general",
   preset: defaultPreset.id,
   palette: {
     bg: defaultPalette.bg,
@@ -48,6 +50,18 @@ const initial: WizardState = {
   darkMode: false,
   fontPair: PRESET_FONT_DEFAULTS[defaultPreset.id] as FontPairId,
   radiusScale: PRESET_RADIUS_DEFAULTS[defaultPreset.id] as RadiusScaleId,
+  visualStyle: "signal-dossier",
+  cardStyle: "border-line",
+  backgroundTreatment: "none",
+  backgroundImage: undefined,
+  backgroundImageName: undefined,
+  glowIntensity: 1,
+  edgeGlow: 1,
+  motionLevel: "standard",
+  marqueeSpeed: 30,
+  hoverDepth: 2,
+  grainIntensity: 0,
+  glassBlur: 0,
   sections: {
     projects: true,
     writing: false,
@@ -58,42 +72,26 @@ const initial: WizardState = {
   },
   githubUsername: "",
   footerStyle: "minimal",
-  showForgeAttribution: true,
+  showForgeAttribution: false,
   projects: [],
   domain: "",
   deployedUrl: undefined,
   deploySlug: undefined,
 };
 
-const EXAMPLE_PROJECTS: Omit<Project, "id">[] = [
-  {
-    title: "JotterDown",
-    summary: "A writing OS for builders. Markdown-first notes, instant publishing.",
-    stack: ["Astro", "TypeScript", "Cloudflare"],
-    role: "Solo build",
-    date: "2026",
-    liveUrl: "https://jotterdown.com",
-    repoUrl: "",
-  },
-  {
-    title: "RighteousRecon",
-    summary: "OSINT tooling for indie investigators. Fast, private, opinionated.",
-    stack: ["Next.js", "Postgres", "Tailwind"],
-    role: "Solo build",
-    date: "2025",
-    liveUrl: "https://righteousrecon.com",
-    repoUrl: "",
-  },
-  {
-    title: "Forge",
-    summary: "The portfolio generator you're using right now. Yours forever.",
-    stack: ["React", "Astro", "Cloudflare Workers"],
-    role: "Solo build",
+function exampleProjectsFor(category: WizardState["careerCategory"]): Omit<Project, "id">[] {
+  const profile = getCareerProfile(category);
+  return profile.examples.slice(0, 3).map((ex) => ({
+    title: ex.workTitle,
+    summary: ex.workSummary,
+    stack: ex.skills,
+    role: ex.contribution,
     date: "2026",
     liveUrl: "",
     repoUrl: "",
-  },
-];
+    draft: true,
+  }));
+}
 
 export const useWizard = create<WizardStore>()(
   persist(
@@ -160,8 +158,9 @@ export const useWizard = create<WizardStore>()(
       addExampleProjects: () =>
         set((s) => {
           if (s.projects.length > 0) return s;
+          const examples = exampleProjectsFor(s.careerCategory ?? "general");
           return {
-            projects: EXAMPLE_PROJECTS.map((p, i) => ({
+            projects: examples.map((p, i) => ({
               ...p,
               id: `p-ex-${i}-${Date.now().toString(36)}`,
             })),
@@ -202,8 +201,17 @@ export const useWizard = create<WizardStore>()(
     }),
     {
       name: "forge-wizard-v1",
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
+      migrate: (persisted) => {
+        const saved = persisted as Partial<WizardState & { step: number }> | undefined;
+        return {
+          ...initial,
+          ...(saved ?? {}),
+          sections: { ...initial.sections, ...(saved?.sections ?? {}) },
+          step: saved?.step ?? 0,
+        };
+      },
       partialize: (s) => {
         const {
           setStep,

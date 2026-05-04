@@ -1,9 +1,11 @@
 import { Plus, Trash2, ArrowUp, ArrowDown, Sparkles, GripVertical } from "lucide-react";
 import { useState } from "react";
 import { useWizard } from "../../lib/store";
+import { getCareerProfile } from "../../lib/professions";
 
 export default function StepProjects() {
   const projects = useWizard((s) => s.projects);
+  const careerCategory = useWizard((s) => s.careerCategory);
   const addProject = useWizard((s) => s.addProject);
   const addExampleProjects = useWizard((s) => s.addExampleProjects);
   const updateProject = useWizard((s) => s.updateProject);
@@ -13,6 +15,8 @@ export default function StepProjects() {
 
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
+  const profile = getCareerProfile(careerCategory);
+  const firstExample = profile.examples[0];
 
   const onCover = (id: string, file: File | undefined) => {
     if (!file) return;
@@ -25,16 +29,17 @@ export default function StepProjects() {
     <div className="space-y-6">
       <div>
         <p className="eyebrow mb-2">Step 5</p>
-        <h2 className="text-3xl mb-2">Add your projects.</h2>
+        <h2 className="text-3xl mb-2">Add your {profile.workLabel.toLowerCase()}.</h2>
         <p className="text-mute text-sm">
-          Up to 8. Drag the handle to reorder. Skip and add them in markdown later if you prefer.
+          Up to 8. These can be projects, client wins, campaigns, lessons, field jobs,
+          credentials, research, or anything that proves the work.
         </p>
       </div>
 
       {projects.length === 0 && (
         <div className="card p-8 text-center space-y-4">
           <p className="text-sm text-mute m-0">
-            No projects yet. Add up to 8, or skip — your zip will include an example you can edit.
+            No work samples yet. Add up to 8, or add role-aware draft rows and type over them.
           </p>
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
             <button
@@ -43,7 +48,7 @@ export default function StepProjects() {
               className="btn btn-primary"
               data-testid="button-add-first-project"
             >
-              <Plus className="w-4 h-4" /> Add a project
+              <Plus className="w-4 h-4" /> Add {profile.workItemLabel.toLowerCase()}
             </button>
             <button
               type="button"
@@ -51,7 +56,7 @@ export default function StepProjects() {
               className="btn btn-ghost"
               data-testid="button-add-examples"
             >
-              <Sparkles className="w-4 h-4" /> Fill with examples
+              <Sparkles className="w-4 h-4" /> Add draft examples
             </button>
           </div>
         </div>
@@ -119,7 +124,9 @@ export default function StepProjects() {
                   >
                     <GripVertical className="w-4 h-4" />
                   </button>
-                  <span className="font-mono text-xs text-mute">Project {String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-mono text-xs text-mute">
+                    {profile.workItemLabel} {String(i + 1).padStart(2, "0")}
+                  </span>
                 </div>
                 <div className="flex gap-1">
                   <button
@@ -152,13 +159,18 @@ export default function StepProjects() {
                   </button>
                 </div>
               </div>
-              <label className="block">
-                <span className="text-xs font-medium mb-1 block">Title *</span>
+                <label className="block">
+                <span className="text-xs font-medium mb-1 block">
+                  Title * {p.draft && <span className="text-mute font-normal">(draft placeholder)</span>}
+                </span>
                 <input
                   type="text"
                   value={p.title}
-                  onChange={(e) => updateProject(p.id, { title: e.target.value })}
-                  placeholder="JotterDown"
+                  onFocus={(e) => {
+                    if (p.draft) e.currentTarget.select();
+                  }}
+                  onChange={(e) => updateProject(p.id, { title: e.target.value, draft: false })}
+                  placeholder={firstExample.workTitle}
                   maxLength={80}
                   data-testid={`input-project-title-${i}`}
                 />
@@ -167,60 +179,76 @@ export default function StepProjects() {
                 <span className="text-xs font-medium mb-1 block">Summary *</span>
                 <textarea
                   value={p.summary}
-                  onChange={(e) => updateProject(p.id, { summary: e.target.value })}
-                  placeholder="A writing OS for builders."
+                  onFocus={(e) => {
+                    if (p.draft) e.currentTarget.select();
+                  }}
+                  onChange={(e) => updateProject(p.id, { summary: e.target.value, draft: false })}
+                  placeholder={firstExample.workSummary}
                   maxLength={160}
                   rows={2}
                   data-testid={`input-project-summary-${i}`}
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-medium mb-1 block">Stack (comma-separated)</span>
+                <span className="text-xs font-medium mb-1 block">{profile.skillLabel} (comma-separated)</span>
                 <input
                   type="text"
                   value={(p.stack || []).join(", ")}
+                  onFocus={(e) => {
+                    if (p.draft) e.currentTarget.select();
+                  }}
                   onChange={(e) =>
                     updateProject(p.id, {
+                      draft: false,
                       stack: e.target.value
                         .split(",")
                         .map((s) => s.trim())
                         .filter(Boolean),
                     })
                   }
-                  placeholder="Astro, TypeScript, Cloudflare"
+                  placeholder={firstExample.skills.join(", ")}
                   data-testid={`input-project-stack-${i}`}
                 />
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="text-xs font-medium mb-1 block">Live URL</span>
+                  <span className="text-xs font-medium mb-1 block">Primary link</span>
                   <input
                     type="url"
                     value={p.liveUrl ?? ""}
-                    onChange={(e) => updateProject(p.id, { liveUrl: e.target.value })}
-                    placeholder="https://..."
+                    onFocus={(e) => {
+                      if (p.draft) e.currentTarget.select();
+                    }}
+                    onChange={(e) => updateProject(p.id, { liveUrl: e.target.value, draft: false })}
+                    placeholder={firstExample.proofPlaceholder}
                     data-testid={`input-project-live-${i}`}
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs font-medium mb-1 block">Repo URL</span>
+                  <span className="text-xs font-medium mb-1 block">{profile.proofLabel}</span>
                   <input
                     type="url"
                     value={p.repoUrl ?? ""}
-                    onChange={(e) => updateProject(p.id, { repoUrl: e.target.value })}
-                    placeholder="https://github.com/..."
+                    onFocus={(e) => {
+                      if (p.draft) e.currentTarget.select();
+                    }}
+                    onChange={(e) => updateProject(p.id, { repoUrl: e.target.value, draft: false })}
+                    placeholder="https://..."
                     data-testid={`input-project-repo-${i}`}
                   />
                 </label>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="text-xs font-medium mb-1 block">Role</span>
+                  <span className="text-xs font-medium mb-1 block">Contribution</span>
                   <input
                     type="text"
                     value={p.role ?? ""}
-                    onChange={(e) => updateProject(p.id, { role: e.target.value })}
-                    placeholder="Solo build"
+                    onFocus={(e) => {
+                      if (p.draft) e.currentTarget.select();
+                    }}
+                    onChange={(e) => updateProject(p.id, { role: e.target.value, draft: false })}
+                    placeholder={firstExample.contribution}
                     maxLength={60}
                     data-testid={`input-project-role-${i}`}
                   />
@@ -230,7 +258,10 @@ export default function StepProjects() {
                   <input
                     type="text"
                     value={p.date ?? ""}
-                    onChange={(e) => updateProject(p.id, { date: e.target.value })}
+                    onFocus={(e) => {
+                      if (p.draft) e.currentTarget.select();
+                    }}
+                    onChange={(e) => updateProject(p.id, { date: e.target.value, draft: false })}
                     placeholder="2026"
                     data-testid={`input-project-date-${i}`}
                   />
@@ -280,7 +311,7 @@ export default function StepProjects() {
           className="btn btn-ghost w-full"
           data-testid="button-add-project"
         >
-          <Plus className="w-4 h-4" /> Add project
+          <Plus className="w-4 h-4" /> Add {profile.workItemLabel.toLowerCase()}
         </button>
       )}
     </div>

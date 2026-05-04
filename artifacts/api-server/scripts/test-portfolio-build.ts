@@ -11,6 +11,7 @@ import {
 } from "../src/forge/schemas";
 
 type PresetId = WizardState["preset"];
+const PNPM_BIN = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
 const PALETTES: Record<PresetId, Palette> = {
   editorial: {
@@ -97,6 +98,7 @@ function run(
     const child = spawn(cmd, args, {
       cwd,
       stdio: ["ignore", "pipe", "pipe"],
+      shell: process.platform === "win32",
       env: {
         ...process.env,
         // Generated portfolio is standalone; pretend we are not in a workspace.
@@ -159,14 +161,14 @@ async function testPreset(preset: PresetId): Promise<void> {
 
     console.log(`  Installing dependencies...`);
     await run(
-      "pnpm",
+      PNPM_BIN,
       ["install", "--ignore-workspace", "--config.minimum-release-age=0"],
       root,
       `${preset}:install`,
     );
 
     console.log(`  Building...`);
-    await run("pnpm", ["run", "build"], root, `${preset}:build`);
+    await run(PNPM_BIN, ["run", "build"], root, `${preset}:build`);
 
     const distStat = await stat(path.join(root, "dist"));
     if (!distStat.isDirectory()) {

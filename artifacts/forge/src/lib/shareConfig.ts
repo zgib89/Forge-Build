@@ -43,7 +43,12 @@ function sanitizeForShare(state: WizardState): { state: WizardState; strippedAss
     stripped = true;
     profilePhoto = undefined;
   }
-  return { state: { ...state, projects, profilePhoto }, strippedAssets: stripped };
+  let backgroundImage = state.backgroundImage;
+  if (backgroundImage) {
+    stripped = true;
+    backgroundImage = undefined;
+  }
+  return { state: { ...state, projects, profilePhoto, backgroundImage }, strippedAssets: stripped };
 }
 
 export function encodeConfig(state: WizardState, baseUrl?: string): EncodeResult {

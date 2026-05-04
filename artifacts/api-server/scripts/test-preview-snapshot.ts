@@ -23,12 +23,12 @@ const PARITY: Record<PresetId, ParityCheck[]> = {
     { name: "max-width 720px wrap", marker: "max-width: 720px" },
     { name: "project-card hover accent line", marker: ".project-card::before" },
     { name: "project-card scale-in hover", marker: ".project-card:hover::before" },
-    { name: "Instrument Serif font", marker: "Instrument Serif" },
+    { name: "dynamic display font token", marker: "--font-display" },
     { name: "chip border", marker: "border: 1px solid var(--color-border)" },
   ],
   minimalist: [
     { name: "max-width 640px wrap", marker: "max-width: 640px" },
-    { name: "JetBrains Mono font", marker: "JetBrains Mono" },
+    { name: "dynamic mono font token", marker: "--font-mono" },
     { name: "blink cursor animation", marker: "@keyframes blink" },
     { name: "literal :: separator", marker: " :: <a href=\"/projects\"" },
     { name: "footer 'forged' link", marker: ">forged</a>" },
@@ -39,7 +39,7 @@ const PARITY: Record<PresetId, ParityCheck[]> = {
     { name: "cubic-bezier hover transition", marker: "cubic-bezier(0.16, 1, 0.3, 1)" },
     { name: "aurora gradient layer", marker: "radial-gradient(60% 60% at 20% 30%" },
     { name: "drift keyframes", marker: "@keyframes drift" },
-    { name: "Inter display font", marker: "Inter" },
+    { name: "dynamic display font token", marker: "--font-display" },
   ],
 };
 

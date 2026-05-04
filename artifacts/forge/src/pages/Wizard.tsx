@@ -9,16 +9,16 @@ import StepProjects from "../components/wizard/StepProjects";
 import StepExport from "../components/wizard/StepExport";
 import PreviewFrame from "../components/wizard/PreviewFrame";
 import ThemeToggle from "../components/ThemeToggle";
-import { ArrowLeft, ArrowRight, Check, Command, Share2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, Command, Share2, X } from "lucide-react";
 import { encodeConfig } from "../lib/shareConfig";
 import { toast } from "../lib/toast";
 
 const STEPS = [
   { label: "Identity", component: StepIdentity },
   { label: "Preset", component: StepPreset },
-  { label: "Palette", component: StepPalette },
+  { label: "Customize", component: StepPalette },
   { label: "Sections", component: StepSections },
-  { label: "Projects", component: StepProjects },
+  { label: "Work", component: StepProjects },
   { label: "Export", component: StepExport },
 ];
 
@@ -71,6 +71,84 @@ function SavedPulse() {
   );
 }
 
+function InstructionsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    requestAnimationFrame(() => closeRef.current?.focus());
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      previous?.focus();
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex justify-end"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Forge instructions"
+      data-testid="instructions-panel"
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+        aria-label="Close instructions"
+      />
+      <aside
+        className="relative h-full w-full max-w-lg overflow-y-auto p-6"
+        style={{ background: "var(--color-bg)", borderLeft: "1px solid var(--color-border)" }}
+      >
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <p className="eyebrow mb-2">Instructions</p>
+            <h2 className="text-3xl">Build, customize, export.</h2>
+          </div>
+          <button ref={closeRef} type="button" className="btn btn-ghost px-2" onClick={onClose} aria-label="Close instructions">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        {[
+          {
+            title: "1. Pick the career lane",
+            body: "Forge changes examples, labels, and placeholders for software, design, writing, healthcare, trades, sales, education, operations, legal, finance, students, or anything custom.",
+          },
+          {
+            title: "2. Choose a visual system",
+            body: "Start from Signal Dossier, Forge Glass, Westfall Archive, Northbridge Horizon, Righteous Recon, Quiet Studio, or Terminal Minimal. Then tune colors, fonts, cards, glow, grain, background treatment, and motion.",
+          },
+          {
+            title: "3. Add proof, not filler",
+            body: "Selected work can be projects, campaigns, client wins, lessons, jobs, credentials, articles, photo galleries, research, or case notes. GitHub is optional.",
+          },
+          {
+            title: "4. Export or deploy",
+            body: "One-click Cloudflare deploy is fastest when enabled. The ZIP path gives you the code forever, plus DEPLOY.md with the no-coding and CLI routes.",
+          },
+        ].map((item) => (
+          <section key={item.title} className="card p-4 mb-3">
+            <h3 className="text-sm font-semibold mb-1" style={{ fontFamily: "var(--font-body)", letterSpacing: 0 }}>
+              {item.title}
+            </h3>
+            <p className="text-sm text-mute leading-relaxed m-0">{item.body}</p>
+          </section>
+        ))}
+      </aside>
+    </div>
+  );
+}
+
 export default function Wizard() {
   const step = useWizard((s) => s.step);
   const setStep = useWizard((s) => s.setStep);
@@ -80,7 +158,12 @@ export default function Wizard() {
   const role = useWizard((s) => s.role);
 
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
+  const [instructionsOpen, setInstructionsOpen] = useState(false);
   const StepComp = STEPS[step].component;
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const canAdvance = useMemo(() => {
     if (step === 0) return name.trim().length >= 2 && role.trim().length >= 1;
@@ -124,11 +207,36 @@ export default function Wizard() {
             >F</span>
             Forge
           </Link>
+          <nav className="hidden lg:flex items-center gap-1 text-sm">
+            <Link href="/#how-it-works" className="btn btn-ghost text-xs">
+              How it works
+            </Link>
+            <Link href="/#presets" className="btn btn-ghost text-xs">
+              Presets
+            </Link>
+            <button
+              type="button"
+              onClick={() => setInstructionsOpen(true)}
+              className="btn btn-ghost text-xs instructions-spotlight"
+              data-testid="button-instructions"
+            >
+              <BookOpen className="w-3 h-3" />
+              Instructions
+            </button>
+          </nav>
           <div className="flex items-center gap-4">
             <SavedPulse />
             <span className="text-sm text-mute font-mono hidden md:inline">
               Step {step + 1} of {STEPS.length} · {STEPS[step].label}
             </span>
+            <button
+              type="button"
+              onClick={() => setInstructionsOpen(true)}
+              className="btn btn-ghost text-xs hidden md:inline-flex lg:hidden instructions-spotlight"
+              data-testid="button-instructions-mobile"
+            >
+              <BookOpen className="w-3 h-3" /> <span>Instructions</span>
+            </button>
             <button
               type="button"
               onClick={async () => {
@@ -188,9 +296,13 @@ export default function Wizard() {
         </div>
       </header>
 
-      <div className="lg:hidden flex border-b border-app">
+      <InstructionsPanel open={instructionsOpen} onClose={() => setInstructionsOpen(false)} />
+
+      <div className="lg:hidden flex border-b border-app" role="tablist" aria-label="Wizard mobile panes">
         <button
           type="button"
+          role="tab"
+          aria-selected={mobileTab === "edit"}
           onClick={() => setMobileTab("edit")}
           className="flex-1 py-3 text-sm font-medium"
           style={{
@@ -203,6 +315,8 @@ export default function Wizard() {
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={mobileTab === "preview"}
           onClick={() => setMobileTab("preview")}
           className="flex-1 py-3 text-sm font-medium"
           style={{
@@ -304,7 +418,21 @@ export default function Wizard() {
         </section>
       </div>
 
-      <style>{`@keyframes stepIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style>{`
+        @keyframes stepIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes instructionPulse {
+          0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-accent) 0%, transparent), 0 0 0 1px color-mix(in oklch, var(--color-accent) 60%, transparent) inset; }
+          50% { box-shadow: 0 0 0 7px color-mix(in oklch, var(--color-accent) 14%, transparent), 0 0 0 1px var(--color-accent) inset; }
+        }
+        .instructions-spotlight {
+          position: relative;
+          border-color: color-mix(in oklch, var(--color-accent) 55%, var(--color-border)) !important;
+          animation: instructionPulse 2.4s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .instructions-spotlight { animation: none; box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-accent) 28%, transparent); }
+        }
+      `}</style>
     </div>
   );
 }

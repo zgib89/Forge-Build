@@ -67,6 +67,7 @@ export default function StepExport() {
   const presetName = PRESETS.find((p) => p.id === wizard.preset)?.name ?? wizard.preset;
   const fontName = FONT_PAIRS.find((f) => f.id === wizard.fontPair)?.name ?? wizard.fontPair;
   const radiusName = RADIUS_SCALES.find((r) => r.id === wizard.radiusScale)?.name ?? wizard.radiusScale;
+  const exportProjects = wizard.projects.filter((p) => !p.draft);
   const enabledSections =
     1 + (Object.values(wizard.sections).filter(Boolean).length);
 
@@ -76,7 +77,7 @@ export default function StepExport() {
     { label: "Palette", value: `${wizard.paletteName} · ${wizard.darkMode ? "Dark" : "Light"}` },
     { label: "Type / corners", value: `${fontName} · ${radiusName}` },
     { label: "Pages", value: `${enabledSections} ${enabledSections === 1 ? "page" : "pages"}` },
-    { label: "Projects", value: `${wizard.projects.length} of 8` },
+    { label: "Projects", value: `${exportProjects.length} of 8` },
   ];
 
   useEffect(() => {
@@ -133,7 +134,7 @@ export default function StepExport() {
   };
 
   const buildAndValidateState = () => {
-    const state = { ...getWizardState(wizard), domain };
+    const state = { ...getWizardState(wizard), domain, projects: exportProjects };
     const parsed = WizardStateSchema.safeParse(state);
     if (!parsed.success) {
       const flat = parsed.error.flatten().fieldErrors;

@@ -51,7 +51,11 @@ export default function CommandPalette() {
   const stepNow = useWizard((s) => s.step);
   const reset = useWizard((s) => s.reset);
   const addExampleProjects = useWizard((s) => s.addExampleProjects);
+  const name = useWizard((s) => s.name);
+  const role = useWizard((s) => s.role);
   const { toggle: toggleTheme, theme } = useTheme();
+  const identityComplete = name.trim().length >= 2 && role.trim().length >= 1;
+  const maxJumpStep = identityComplete ? stepNow : 0;
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -80,7 +84,7 @@ export default function CommandPalette() {
 
   const commands: Command[] = useMemo(
     () => [
-      ...STEP_META.map((s) => ({
+      ...STEP_META.filter((s) => s.idx <= maxJumpStep).map((s) => ({
         id: `step-${s.idx}`,
         group: "Jump to step",
         title: `Step ${s.idx + 1} · ${s.label}`,
@@ -187,24 +191,8 @@ export default function CommandPalette() {
           }
         },
       },
-      {
-        id: "external-zac",
-        group: "External",
-        title: "zacgibson.work",
-        icon: ExternalLink,
-        keywords: "author zac",
-        run: () => window.open("https://zacgibson.work", "_blank"),
-      },
-      {
-        id: "external-jotter",
-        group: "External",
-        title: "JotterDown",
-        icon: ExternalLink,
-        keywords: "jotter notes",
-        run: () => window.open("https://jotterdown.com", "_blank"),
-      },
     ],
-    [stepNow, theme, setStep, navigate, reset, addExampleProjects, toggleTheme],
+    [maxJumpStep, stepNow, theme, setStep, navigate, reset, addExampleProjects, toggleTheme],
   );
 
   const filtered = useMemo(() => {
@@ -239,6 +227,7 @@ export default function CommandPalette() {
   }
 
   let runningIdx = -1;
+  const activeOptionId = filtered[activeIdx]?.id ? `cmdk-option-${filtered[activeIdx].id}` : undefined;
 
   return (
     <div
@@ -255,6 +244,11 @@ export default function CommandPalette() {
           <input
             ref={inputRef}
             type="text"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="cmdk-list"
+            aria-activedescendant={activeOptionId}
+            aria-autocomplete="list"
             placeholder="Type a command or search…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -275,7 +269,7 @@ export default function CommandPalette() {
           />
           <kbd className="cmdk-kbd">esc</kbd>
         </div>
-        <div className="cmdk-list" role="listbox">
+        <div className="cmdk-list" role="listbox" id="cmdk-list">
           {filtered.length === 0 && (
             <div className="cmdk-empty">No matching commands.</div>
           )}
@@ -284,14 +278,16 @@ export default function CommandPalette() {
               <div className="cmdk-group-label">{g.name}</div>
               {g.items.map((c) => {
                 runningIdx += 1;
-                const isActive = runningIdx === activeIdx;
+                const optionIndex = runningIdx;
+                const isActive = optionIndex === activeIdx;
                 return (
                   <button
                     type="button"
                     key={c.id}
                     role="option"
+                    id={`cmdk-option-${c.id}`}
                     aria-selected={isActive}
-                    onMouseEnter={() => setActiveIdx(runningIdx)}
+                    onMouseEnter={() => setActiveIdx(optionIndex)}
                     onClick={() => {
                       setOpen(false);
                       c.run();

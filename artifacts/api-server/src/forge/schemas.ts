@@ -1,5 +1,53 @@
 import { z } from "zod";
 
+export const CareerCategorySchema = z.enum([
+  "general",
+  "beauty-wellness",
+  "software-it",
+  "design-creative",
+  "writing-research",
+  "operations-admin",
+  "sales-marketing",
+  "hospitality-food",
+  "retail-customer-service",
+  "education-training",
+  "healthcare-care",
+  "trades-field",
+  "real-estate-property",
+  "logistics-transportation",
+  "manufacturing-warehouse",
+  "finance-legal",
+  "public-service-nonprofit",
+  "fitness-coaching",
+  "arts-events",
+  "agriculture-outdoor",
+  "student-early-career",
+]);
+
+export const VisualStyleSchema = z.enum([
+  "custom",
+  "signal-dossier",
+  "forge-glass",
+  "westfall-archive",
+  "northbridge-horizon",
+  "righteous-recon",
+  "quiet-studio",
+  "terminal-minimal",
+]);
+
+export const CardStyleSchema = z.enum([
+  "flat-editorial",
+  "border-line",
+  "soft-bubble",
+  "forge-glass",
+  "archive-evidence",
+  "recon-stat",
+  "app-icon",
+]);
+
+export const BackgroundTreatmentSchema = z.enum(["none", "soft", "duotone", "grain", "spotlight"]);
+export const MotionLevelSchema = z.enum(["none", "calm", "standard", "expressive"]);
+
 export const ProjectSchema = z.object({
   id: z
     .string()
@@ -14,6 +62,7 @@ export const ProjectSchema = z.object({
   liveUrl: z.string().optional(),
   repoUrl: z.string().optional(),
   coverImage: z.string().optional(),
+  draft: z.boolean().optional(),
 });
 
 const CSS_COLOR_RE =
@@ -39,6 +88,7 @@ export const WizardStateSchema = z.object({
   tagline: z.string().max(120).optional().default(""),
   location: z.string().max(60).optional().default(""),
   profilePhoto: z.string().optional(),
+  careerCategory: CareerCategorySchema.default("general"),
 
   preset: z.enum(["editorial", "minimalist", "aurora"]),
   palette: PaletteSchema,
@@ -48,6 +98,18 @@ export const WizardStateSchema = z.object({
     .enum(["editorial", "modern", "mono", "display", "classic"])
     .default("modern"),
   radiusScale: z.enum(["sharp", "soft", "pill"]).default("soft"),
+  visualStyle: VisualStyleSchema.default("forge-glass"),
+  cardStyle: CardStyleSchema.default("border-line"),
+  backgroundTreatment: BackgroundTreatmentSchema.default("none"),
+  backgroundImage: z.string().max(2_500_000).optional(),
+  backgroundImageName: z.string().max(120).optional(),
+  glowIntensity: z.number().min(0).max(4).default(1),
+  edgeGlow: z.number().min(0).max(4).default(1),
+  motionLevel: MotionLevelSchema.default("standard"),
+  marqueeSpeed: z.number().min(12).max(90).default(30),
+  hoverDepth: z.number().min(0).max(8).default(2),
+  grainIntensity: z.number().min(0).max(3).default(0),
+  glassBlur: z.number().min(0).max(3).default(0),
 
   sections: z.object({
     projects: z.boolean().default(true),
@@ -64,7 +126,7 @@ export const WizardStateSchema = z.object({
     .optional()
     .default(""),
   footerStyle: z.enum(["minimal", "detailed", "credits"]).default("minimal"),
-  showForgeAttribution: z.boolean().default(true),
+  showForgeAttribution: z.boolean().default(false),
 
   projects: z.array(ProjectSchema).max(8).default([]),
 

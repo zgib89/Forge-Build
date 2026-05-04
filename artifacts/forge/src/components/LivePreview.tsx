@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiUrl } from "../lib/api";
 import { PRESETS, type PresetId } from "../lib/presets";
 import {
@@ -11,30 +11,30 @@ import {
 const DEMO_PROJECTS = [
   {
     id: "p1",
-    title: "JotterDown",
-    summary: "A writing OS for builders. Markdown-first notes, instant publishing.",
-    stack: ["Astro", "TypeScript", "Cloudflare"],
-    role: "Solo build",
+    title: "Selected work sample",
+    summary: "A short proof point, project, client result, service transformation, or case study.",
+    stack: ["Skill", "Method", "Outcome"],
+    role: "Your contribution",
     date: "2026",
-    liveUrl: "https://jotterdown.com",
+    liveUrl: "",
     repoUrl: "",
   },
   {
     id: "p2",
-    title: "RighteousRecon",
-    summary: "OSINT tooling for indie investigators. Fast, private, opinionated.",
-    stack: ["Next.js", "Postgres", "Tailwind"],
-    role: "Solo build",
+    title: "Client or team win",
+    summary: "Explain the problem, what you did, and the result in one clean sentence.",
+    stack: ["Service", "Tool", "Result"],
+    role: "Owner",
     date: "2025",
-    liveUrl: "https://righteousrecon.com",
+    liveUrl: "",
     repoUrl: "",
   },
   {
     id: "p3",
-    title: "Forge",
-    summary: "The portfolio generator you're looking at. Yours forever.",
-    stack: ["React", "Astro", "Cloudflare Workers"],
-    role: "Solo build",
+    title: "Signature experience",
+    summary: "Use this slot for a credential, gallery, campaign, job, lesson, article, or product.",
+    stack: ["Proof", "Context", "Impact"],
+    role: "Contributor",
     date: "2026",
     liveUrl: "",
     repoUrl: "",
@@ -45,28 +45,55 @@ function buildState(presetId: PresetId) {
   const preset = PRESETS.find((p) => p.id === presetId)!;
   const palette = preset.palettes[0];
   return {
-    name: "Ada Lovelace",
-    role: presetId === "minimalist" ? "Infrastructure Engineer" : presetId === "aurora" ? "Creative Technologist" : "Independent Engineer",
+    name: "Your Name",
+    role: presetId === "minimalist" ? "Your Role" : presetId === "aurora" ? "Your Creative Role" : "Your Professional Role",
     tagline:
       presetId === "minimalist"
-        ? "Shipping infrastructure that disappears."
+        ? "A concise line about the outcomes you create."
         : presetId === "aurora"
-          ? "Where code becomes light."
-          : "Building the tools I wish existed.",
-    location: "Murfreesboro, TN",
+          ? "A concise line about your style, service, or specialty."
+          : "A concise line about your work, audience, and proof.",
+    location: "Your City",
+    careerCategory: "general",
     preset: presetId,
     palette,
     paletteName: palette.name,
     darkMode: presetId === "aurora",
     fontPair: PRESET_FONT_DEFAULTS[presetId] as FontPairId,
     radiusScale: PRESET_RADIUS_DEFAULTS[presetId] as RadiusScaleId,
+    visualStyle: presetId === "aurora" ? "forge-glass" : presetId === "minimalist" ? "terminal-minimal" : "signal-dossier",
+    cardStyle: presetId === "aurora" ? "forge-glass" : "border-line",
+    backgroundTreatment: presetId === "aurora" ? "spotlight" : "grain",
+    glowIntensity: presetId === "aurora" ? 3 : 1,
+    edgeGlow: presetId === "aurora" ? 3 : 1,
+    motionLevel: presetId === "minimalist" ? "calm" : "standard",
+    marqueeSpeed: 30,
+    hoverDepth: presetId === "minimalist" ? 1 : 3,
+    grainIntensity: presetId === "aurora" ? 1 : 2,
+    glassBlur: presetId === "aurora" ? 2 : 0,
     sections: { projects: true, writing: false, about: true, contact: true, now: false, uses: false },
     githubUsername: "",
     footerStyle: "minimal",
-    showForgeAttribution: true,
+    showForgeAttribution: false,
     projects: DEMO_PROJECTS,
-    domain: "ada.work",
+    domain: "your-site.work",
   };
+}
+
+function makePreviewHtmlSafe(raw: string): string {
+  if (typeof DOMParser === "undefined") return raw;
+  const doc = new DOMParser().parseFromString(raw, "text/html");
+  doc.querySelectorAll("a[href]").forEach((anchor) => {
+    const href = anchor.getAttribute("href") ?? "";
+    anchor.setAttribute("data-preview-href", href);
+    anchor.setAttribute("aria-disabled", "true");
+    anchor.setAttribute("tabindex", "-1");
+    anchor.removeAttribute("href");
+  });
+  const style = doc.createElement("style");
+  style.textContent = "a[data-preview-href]{pointer-events:none!important;cursor:default!important}";
+  doc.head.appendChild(style);
+  return "<!doctype html>\n" + doc.documentElement.outerHTML;
 }
 
 interface Props {
@@ -78,12 +105,40 @@ interface Props {
 
 export default function LivePreview({ initial = "aurora", showSwitcher = true, height = 520, className }: Props) {
   const [active, setActive] = useState<PresetId>(initial);
+  const [html, setHtml] = useState<string>(
+    '<!doctype html><html><body style="font-family:monospace;padding:2rem;color:#888;">Loading preview...</body></html>',
+  );
 
-  const src = useMemo(() => {
-    const state = buildState(active);
-    const encoded = encodeURIComponent(JSON.stringify(state));
-    return `${apiUrl("/api/forge/preview")}?state=${encoded}`;
+  const state = useMemo(() => {
+    return buildState(active);
   }, [active]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(apiUrl("/api/forge/preview"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state),
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error(`Preview failed (${r.status})`);
+        return r.text();
+      })
+      .then((text) => {
+        if (!cancelled) setHtml(makePreviewHtmlSafe(text));
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : "Preview failed";
+          setHtml(
+            `<!doctype html><html><body style="font-family:monospace;padding:2rem;color:#888;">${message}</body></html>`,
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [state]);
 
   return (
     <div className={`live-preview-shell ${className ?? ""}`}>
@@ -94,7 +149,7 @@ export default function LivePreview({ initial = "aurora", showSwitcher = true, h
           <span style={{ background: "#27c93f" }} />
         </div>
         <div className="live-preview-url font-mono">
-          ada.work / <span style={{ color: "var(--color-accent)" }}>{active}</span>
+          your-site.work / <span style={{ color: "var(--color-accent)" }}>{active}</span>
         </div>
         {showSwitcher && (
           <div className="live-preview-tabs" role="tablist" aria-label="Preset preview">
@@ -120,7 +175,7 @@ export default function LivePreview({ initial = "aurora", showSwitcher = true, h
       </div>
       <iframe
         title={`Live preview · ${active}`}
-        src={src}
+        srcDoc={html}
         sandbox="allow-same-origin"
         loading="lazy"
         className="live-preview-iframe"

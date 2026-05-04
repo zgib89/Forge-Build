@@ -36,6 +36,9 @@ export async function buildPortfolioZip(state: WizardState): Promise<Buffer> {
 
   const presetFiles = presetTemplateMap[state.preset];
   for (const [path, source] of Object.entries(presetFiles)) {
+    if (path === "src/pages/about.astro" && !state.sections.about) continue;
+    if (path === "src/pages/contact.astro" && !state.sections.contact) continue;
+    if (path.startsWith("src/pages/projects") && !state.sections.projects) continue;
     zip.file(path, render(source, ctx));
   }
 
@@ -75,8 +78,11 @@ import Layout from "../layouts/Layout.astro";
     s.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+|-+$/g, "") || "project";
   const safeExt = (s: string) =>
     /^[a-z0-9]+$/.test(s) ? s : "png";
-  for (let i = 0; i < state.projects.length; i++) {
-    const p = state.projects[i];
+  const exportProjects = state.sections.projects
+    ? state.projects.filter((project) => !project.draft)
+    : [];
+  for (let i = 0; i < exportProjects.length; i++) {
+    const p = exportProjects[i];
     const id = safeId(p.id);
     let coverPath: string | undefined;
     if (p.coverImage) {
@@ -102,11 +108,11 @@ import Layout from "../layouts/Layout.astro";
     zip.file(`src/content/projects/${id}.md`, md);
   }
 
-  if (state.projects.length === 0) {
+  if (state.sections.projects && exportProjects.length === 0) {
     const example = render(projectMarkdownTemplate, {
-      title: "Example project",
-      summary: "Replace this file with your own work in src/content/projects/.",
-      stack: ["Astro", "Cloudflare"],
+      title: "Example work",
+      summary: "Replace this file with your own selected work in src/content/projects/.",
+      stack: ["Skill", "Outcome"],
       order: 0,
     });
     zip.file("src/content/projects/example.md", example);

@@ -66,7 +66,7 @@ router.get("/forge/preview", (req, res) => {
       );
     return;
   }
-  const html = renderPreviewHtml(parsed.data);
+  const html = renderPreviewHtml(parsed.data, { linkMode: "inert" });
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");
   res.send(html);
@@ -83,7 +83,7 @@ router.post("/forge/preview", (req, res) => {
       );
     return;
   }
-  const html = renderPreviewHtml(parsed.data);
+  const html = renderPreviewHtml(parsed.data, { linkMode: "inert" });
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");
   res.send(html);

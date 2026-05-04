@@ -15,6 +15,7 @@ import {
   Github,
   CloudLightning,
   PaintBucket,
+  BookOpen,
 } from "lucide-react";
 import { PRESETS } from "../lib/presets";
 import LivePreview from "../components/LivePreview";
@@ -58,44 +59,44 @@ function KineticHeadline() {
 const FEATURES = [
   {
     icon: Zap,
-    title: "Astro 6 + Cloudflare Workers",
-    desc: "Edge-deployed worldwide. Free hosting. Lighthouse 100 by default.",
+    title: "Real site, not a rented profile",
+    desc: "A production Astro 6 portfolio you can download, host, edit, and keep.",
     tone: "tall" as const,
   },
   {
     icon: PaintBucket,
-    title: "OKLCH color, Tailwind v4",
-    desc: "Perceptually uniform palettes that look right in every shade.",
+    title: "Seven visual systems",
+    desc: "Signal, glass, archive, IAM, recon, quiet studio, and terminal looks.",
   },
   {
     icon: Sparkles,
-    title: "Native View Transitions",
-    desc: "Browser-native page transitions. No SPA tax.",
+    title: "Effects with guardrails",
+    desc: "Glow, edge light, grain, hover depth, glass blur, and motion controls.",
   },
   {
     icon: Code,
-    title: "Markdown content collections",
-    desc: "Zod-validated frontmatter. Add a project by writing a file.",
+    title: "Any career lane",
+    desc: "Software, design, writing, sales, healthcare, trades, education, ops, and more.",
   },
   {
     icon: Gauge,
-    title: "Five-minute custom domain",
-    desc: "DEPLOY.md walks you through Cloudflare, end to end.",
+    title: "Background upload ready",
+    desc: "Bring your own image or use Pexels materials, studios, and abstract surfaces.",
   },
   {
     icon: CloudLightning,
-    title: "Workers-ready out of the box",
-    desc: "Wrangler config included. <code>pnpm wrangler deploy</code> ships it.",
+    title: "Multiple deploy paths",
+    desc: "One-click Cloudflare when enabled, ZIP download always, CLI if you want it.",
     tone: "wide" as const,
   },
 ];
 
 const STEPS = [
-  { icon: UserRound, title: "Identity", desc: "Name, role, tagline, photo." },
+  { icon: UserRound, title: "Identity", desc: "Career lane, name, role, tagline, photo." },
   { icon: Layers, title: "Preset", desc: "Pick the visual identity that fits." },
-  { icon: SlidersHorizontal, title: "Make it yours", desc: "Tune palette, fonts, and corners." },
+  { icon: SlidersHorizontal, title: "Customize", desc: "Tune colors, type, effects, backgrounds." },
   { icon: ListChecks, title: "Sections", desc: "Toggle the pages you want." },
-  { icon: FolderGit2, title: "Projects", desc: "Add up to eight, or fill from examples." },
+  { icon: FolderGit2, title: "Selected work", desc: "Add proof for any profession." },
   { icon: PackageCheck, title: "Export", desc: "Real Astro 6 zip — yours forever." },
 ];
 
@@ -200,6 +201,14 @@ export default function Landing() {
             >
               Presets
             </a>
+            <a
+              href="#instructions"
+              className="hidden md:inline-block btn btn-ghost text-sm"
+              data-testid="nav-instructions"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              Instructions
+            </a>
             <ThemeToggle />
             <Link
               href="/forge"
@@ -238,9 +247,9 @@ export default function Landing() {
                 Build <KineticHeadline />
               </h1>
               <p className="mt-7 text-base md:text-lg text-mute max-w-xl leading-relaxed">
-                Forge generates a real Astro 6 project — your code, your domain, your
-                Cloudflare. Six steps. Ninety seconds. The zip you download today is the
-                same site you ship tonight.
+                Forge generates a real portfolio for any profession, not just a developer
+                profile. Pick a career lane, choose a visual system, tune the details, and
+                export a site you own.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link
@@ -278,7 +287,7 @@ export default function Landing() {
               <div className="relative">
                 <div
                   aria-hidden
-                  className="absolute -inset-4 rounded-2xl"
+                  className="absolute -inset-4 rounded-2xl pointer-events-none"
                   style={{
                     background:
                       "radial-gradient(60% 60% at 50% 0%, color-mix(in oklch, var(--color-accent) 25%, transparent) 0%, transparent 70%)",
@@ -351,6 +360,49 @@ export default function Landing() {
               </Reveal>
             ))}
           </ol>
+
+          <Reveal delay={200}>
+            <div id="instructions" className="mt-16 mb-10 max-w-2xl scroll-mt-24">
+              <p className="eyebrow mb-3">Instructions</p>
+              <h2 className="text-4xl md:text-5xl">Export, publish, or keep building.</h2>
+              <p className="text-mute mt-4 text-base">
+                The install path is not hidden at the end anymore. Use one-click deploy
+                when it is enabled, download the ZIP if you want total ownership, or follow
+                the guided no-code route with GitHub Desktop and Cloudflare.
+              </p>
+            </div>
+          </Reveal>
+
+          <ol className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {[
+              { title: "One-click deploy", desc: "If enabled, Forge publishes straight to Cloudflare and returns a live URL." },
+              { title: "Download the ZIP", desc: "You get the full Astro project, content files, styles, and deployment guide." },
+              { title: "No-code route", desc: "Use GitHub Desktop to publish the folder without touching a terminal." },
+              { title: "Cloudflare route", desc: "Connect the repo or deploy with Wrangler. Free hosting works for most portfolios." },
+              { title: "Custom domain", desc: "Start on a free URL, then point your own domain when you are ready." },
+            ].map((step, i) => (
+              <Reveal key={step.title} delay={i * 60} as="li">
+                <div className="bento h-full">
+                  <span
+                    className="absolute top-3 right-3 font-mono text-[10px] text-mute"
+                    aria-hidden="true"
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="font-body font-semibold text-sm mb-1" style={{ fontFamily: "var(--font-body)", letterSpacing: 0 }}>
+                    {step.title}
+                  </h3>
+                  <p className="text-xs text-mute m-0 leading-relaxed">{step.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </ol>
+
+          <Reveal delay={200}>
+            <p className="text-xs text-mute font-mono mt-6 text-center">
+              Detailed walkthrough with the exact buttons to click still appears after export.
+            </p>
+          </Reveal>
         </section>
 
         {/* PRESETS — live, switchable */}
@@ -361,8 +413,8 @@ export default function Landing() {
                 <p className="eyebrow mb-3">Three presets, ready to ship</p>
                 <h2 className="text-4xl md:text-5xl">Pick a vibe.</h2>
                 <p className="text-mute mt-4">
-                  Each preset is a complete visual identity — typography, color, motion. Tap
-                  through to see them render live. Then customize anything.
+                  Each preset is a starting point. Inside the builder you can go much further:
+                  full visual systems, role-aware examples, background images, and effect sliders.
                 </p>
               </div>
               <Link
@@ -540,47 +592,17 @@ export default function Landing() {
             <div className="md:col-span-2">
               <p className="font-display text-2xl mb-2" style={{ color: "var(--color-text)" }}>Forge</p>
               <p className="max-w-md">
-                An IAM engineer in Tennessee shipping the tools he needs. Forge is open
-                source, free forever, and built so you never have to ask permission to own
-                your portfolio.
+                A free portfolio builder for people who want ownership, taste, and enough
+                customization to stop looking like everyone else.
               </p>
             </div>
             <div>
-              <p className="eyebrow mb-3">Tools</p>
+              <p className="eyebrow mb-3">Best for</p>
               <ul className="space-y-1.5 list-none p-0">
-                <li>
-                  <a
-                    href="https://jotterdown.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ color: "var(--color-accent)" }}
-                    data-testid="link-jotterdown"
-                  >
-                    JotterDown
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://righteousrecon.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ color: "var(--color-accent)" }}
-                    data-testid="link-righteousrecon"
-                  >
-                    RighteousRecon
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://zacgibson.work"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ color: "var(--color-accent)" }}
-                    data-testid="link-zacgibson"
-                  >
-                    zacgibson.work
-                  </a>
-                </li>
+                <li>Career switchers</li>
+                <li>Independent pros</li>
+                <li>Service businesses</li>
+                <li>Creative portfolios</li>
               </ul>
             </div>
             <div>
@@ -594,7 +616,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="mt-10 pt-6 border-t border-app flex flex-col md:flex-row gap-3 items-start md:items-center justify-between text-xs font-mono">
-            <p>© {new Date().getFullYear()} Forge. MIT licensed. Built with absurd care by Zac Gibson.</p>
+            <p>© {new Date().getFullYear()} Forge. MIT licensed. Built for portable, personal portfolio ownership.</p>
             <div className="flex items-center gap-2">
               <Github className="w-3.5 h-3.5" />
               <span>Open source · yours forever</span>

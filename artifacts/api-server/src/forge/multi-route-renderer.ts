@@ -35,10 +35,36 @@ const PRESET_FONTS: Record<WizardState["preset"], PresetFonts> = {
   },
 };
 
+const FONT_PAIR_FONTS: Record<WizardState["fontPair"], PresetFonts> = {
+  editorial: PRESET_FONTS.editorial,
+  modern: PRESET_FONTS.aurora,
+  mono: PRESET_FONTS.minimalist,
+  display: {
+    display: "'Space Grotesk', system-ui, sans-serif",
+    body: "'Inter', system-ui, sans-serif",
+    mono: "'JetBrains Mono', ui-monospace, monospace",
+    link: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400&display=swap",
+  },
+  classic: {
+    display: "'Fraunces', Georgia, serif",
+    body: "'Inter', system-ui, sans-serif",
+    mono: "'JetBrains Mono', ui-monospace, monospace",
+    link: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap",
+  },
+};
+
+function fontsFor(state: WizardState): PresetFonts {
+  return FONT_PAIR_FONTS[state.fontPair] ?? PRESET_FONTS[state.preset];
+}
+
 function tokenCss(state: WizardState): string {
   const p = state.palette;
-  const fp = PRESET_FONTS[state.preset];
+  const fp = fontsFor(state);
   const isDark = state.darkMode || state.preset === "aurora";
+  const glow = state.glowIntensity ?? 1;
+  const edge = state.edgeGlow ?? 1;
+  const hover = state.hoverDepth ?? 2;
+  const glass = state.glassBlur ?? 0;
   return `
 :root {
   --color-bg: ${p.bg};
@@ -51,6 +77,10 @@ function tokenCss(state: WizardState): string {
   --font-display: ${fp.display};
   --font-body: ${fp.body};
   --font-mono: ${fp.mono};
+  --fx-glow: ${glow};
+  --fx-edge: ${edge};
+  --fx-hover-depth: ${hover}px;
+  --fx-glass: ${glass};
   color-scheme: ${isDark ? "dark" : "light"};
 }
 * { box-sizing: border-box; }
@@ -69,7 +99,8 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; letter-spacing:
 .muted { color: var(--color-mute); }
 .lede { font-size: 1.25rem; color: var(--color-mute); max-width: 36rem; margin-bottom: 1.5rem; }
 .project-list { list-style: none; padding: 0; margin: 0; }
-.project-list li { border-top: 1px solid var(--color-border); padding: 1.5rem 0; }
+.project-list li { border-top: 1px solid var(--color-border); padding: 1.5rem 0; transition: transform 200ms, box-shadow 200ms; box-shadow: 0 0 calc(var(--fx-edge) * 5px) color-mix(in oklch, var(--color-accent) calc(var(--fx-glow) * 4%), transparent); }
+.project-list li:hover { transform: translateY(calc(-1 * var(--fx-hover-depth))); }
 .project-list li:last-child { border-bottom: 1px solid var(--color-border); }
 .project-list h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
 .project-list .meta { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-mute); margin: 0 0 0.5rem; text-transform: uppercase; letter-spacing: 0.06em; }
@@ -95,7 +126,7 @@ function navItems(state: WizardState): string {
 }
 
 function pageShell(state: WizardState, title: string, body: string): string {
-  const fp = PRESET_FONTS[state.preset];
+  const fp = fontsFor(state);
   const isDark = state.darkMode || state.preset === "aurora";
   const name = escapeHtml(state.name || "Portfolio");
   return `<!doctype html>
@@ -151,7 +182,7 @@ function renderContact(state: WizardState): string {
 }
 
 function renderProjectsIndex(state: WizardState): string {
-  const projects = state.projects;
+  const projects = state.projects.filter((p) => !p.draft);
   const list = projects.length
     ? `<ul class="project-list">${projects
         .map(
@@ -163,21 +194,21 @@ function renderProjectsIndex(state: WizardState): string {
       </li>`,
         )
         .join("")}</ul>`
-    : `<p class="muted">No projects yet — add them in step 5 and re-deploy.</p>`;
+    : `<p class="muted">No selected work yet. Add proof in step 5 and re-deploy.</p>`;
   const body = `<section class="page">
     <p class="eyebrow">Selected work</p>
-    <h1>Projects</h1>
+    <h1>Selected work</h1>
     ${list}
   </section>`;
-  return pageShell(state, "Projects", body);
+  return pageShell(state, "Selected work", body);
 }
 
 function renderProjectDetail(state: WizardState, p: Project): string {
   const links: string[] = [];
-  if (p.liveUrl) links.push(`<a href="${escapeHtml(p.liveUrl)}" rel="noopener">Live →</a>`);
-  if (p.repoUrl) links.push(`<a href="${escapeHtml(p.repoUrl)}" rel="noopener">Source →</a>`);
+  if (p.liveUrl) links.push(`<a href="${escapeHtml(p.liveUrl)}" rel="noopener">View →</a>`);
+  if (p.repoUrl) links.push(`<a href="${escapeHtml(p.repoUrl)}" rel="noopener">Proof →</a>`);
   const body = `<section class="page">
-    <p class="eyebrow"><a href="/projects/" style="color: var(--color-accent);">← All projects</a></p>
+    <p class="eyebrow"><a href="/projects/" style="color: var(--color-accent);">← All work</a></p>
     <h1>${escapeHtml(p.title)}</h1>
     <p class="lede">${escapeHtml(p.summary)}</p>
     <p class="muted">${escapeHtml(p.date || "")}${p.role ? ` · ${escapeHtml(p.role)}` : ""}</p>
@@ -215,12 +246,15 @@ export interface RouteFile {
 
 export function renderAllRoutes(state: WizardState): RouteFile[] {
   const files: RouteFile[] = [];
-  files.push({ path: "/index.html", html: renderPreviewHtml(state) });
+  files.push({
+    path: "/index.html",
+    html: renderPreviewHtml(state, { titleSuffix: state.role || "Portfolio" }),
+  });
   if (state.sections.about) files.push({ path: "/about/index.html", html: renderAbout(state) });
   if (state.sections.contact) files.push({ path: "/contact/index.html", html: renderContact(state) });
   if (state.sections.projects) {
     files.push({ path: "/projects/index.html", html: renderProjectsIndex(state) });
-    for (const p of state.projects) {
+    for (const p of state.projects.filter((project) => !project.draft)) {
       files.push({
         path: `/projects/${p.id}/index.html`,
         html: renderProjectDetail(state, p),

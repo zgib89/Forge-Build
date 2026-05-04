@@ -9,10 +9,12 @@ export const editorialTemplates: Record<string, string> = {
   --color-text: {{state.palette.text}};
   --color-mute: {{state.palette.mute}};
   --color-accent: {{state.palette.accent}};
+  --color-accent-2: {{#if state.palette.accent2}}{{state.palette.accent2}}{{else}}{{state.palette.accent}}{{/if}};
 
-  --font-display: 'Instrument Serif', Georgia, serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: {{font state.fontPair "display"}};
+  --font-body: {{font state.fontPair "body"}};
+  --font-mono: {{font state.fontPair "mono"}};
+{{fxVars state}}
 }
 
 @layer base {
@@ -39,6 +41,7 @@ export const editorialTemplates: Record<string, string> = {
 }
 
 @view-transition { navigation: auto; }
+{{fxRules state}}
 
 .eyebrow {
   text-transform: uppercase;
@@ -62,9 +65,10 @@ export const editorialTemplates: Record<string, string> = {
   border-top: 1px solid var(--color-border);
   padding: 2rem 0;
   position: relative;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms;
+  box-shadow: 0 0 calc(var(--fx-edge) * 6px) color-mix(in oklch, var(--color-accent) calc(var(--fx-glow) * 5%), transparent);
 }
-.project-card:hover { transform: translateY(-2px); }
+.project-card:hover { transform: translateY(calc(-1 * var(--fx-hover-depth))); }
 .project-card::before {
   content: "";
   position: absolute;
@@ -113,7 +117,7 @@ const { title = "{{jsonStr state.name}} — {{jsonStr state.role}}", description
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="{{font state.fontPair "link"}}" rel="stylesheet" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />

@@ -45,6 +45,7 @@ export function hsl(h: number, s: number, l: number): string {
 }
 
 export interface DerivedPalette {
+  name?: string;
   bg: string;
   surface: string;
   border: string;
@@ -108,10 +109,82 @@ export function normalizeHex(input: string): string | null {
 }
 
 export function randomBrandHex(): string {
-  const h = Math.floor(Math.random() * 360);
-  const s = 60 + Math.floor(Math.random() * 30);
-  const l = 45 + Math.floor(Math.random() * 15);
+  const h = randomInt(0, 359);
+  const s = 55 + randomInt(0, 36);
+  const l = 38 + randomInt(0, 32);
   return hslStringToHex(`hsl(${h} ${s}% ${l}%)`);
+}
+
+function randomUnit(): number {
+  if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
+    const buf = new Uint32Array(1);
+    crypto.getRandomValues(buf);
+    return buf[0] / 0xffffffff;
+  }
+  return Math.random();
+}
+
+function randomInt(min: number, max: number): number {
+  return min + Math.floor(randomUnit() * (max - min + 1));
+}
+
+function pick<T>(items: T[]): T {
+  return items[Math.min(items.length - 1, randomInt(0, items.length - 1))];
+}
+
+function hue(h: number): number {
+  return ((Math.round(h) % 360) + 360) % 360;
+}
+
+export function generateRandomPalette(dark: boolean): Required<DerivedPalette> {
+  const strategy = pick(["analogous", "complementary", "split", "warm-neutral", "cool-neutral"] as const);
+  const baseHue = randomInt(0, 359);
+  const accent2Delta =
+    strategy === "analogous" ? pick([28, 42, -34]) :
+    strategy === "complementary" ? pick([165, 180, 195]) :
+    strategy === "split" ? pick([140, 215]) :
+    strategy === "warm-neutral" ? pick([40, 150, 205]) :
+    pick([55, 120, 185]);
+  const neutralHue =
+    strategy === "warm-neutral" ? randomInt(28, 58) :
+    strategy === "cool-neutral" ? randomInt(205, 240) :
+    hue(baseHue + randomInt(-18, 18));
+  const accentS = randomInt(58, 88);
+  const accentL = dark ? randomInt(62, 76) : randomInt(36, 54);
+  const accent2S = randomInt(48, 84);
+  const accent2L = dark ? randomInt(58, 76) : randomInt(38, 58);
+
+  const names = {
+    analogous: "Generated Analog",
+    complementary: "Generated Contrast",
+    split: "Generated Split",
+    "warm-neutral": "Generated Warm Neutral",
+    "cool-neutral": "Generated Cool Neutral",
+  };
+
+  if (dark) {
+    return {
+      name: names[strategy],
+      bg: hsl(neutralHue, randomInt(8, 24), randomInt(7, 12)),
+      surface: hsl(neutralHue, randomInt(10, 26), randomInt(13, 19)),
+      border: hsl(neutralHue, randomInt(14, 32), randomInt(26, 36)),
+      text: hsl(neutralHue, randomInt(4, 10), randomInt(93, 98)),
+      mute: hsl(neutralHue, randomInt(8, 18), randomInt(66, 76)),
+      accent: hsl(baseHue, accentS, accentL),
+      accent2: hsl(hue(baseHue + accent2Delta), accent2S, accent2L),
+    };
+  }
+
+  return {
+    name: names[strategy],
+    bg: hsl(neutralHue, randomInt(6, 18), randomInt(96, 99)),
+    surface: hsl(neutralHue, randomInt(8, 20), randomInt(92, 97)),
+    border: hsl(neutralHue, randomInt(10, 24), randomInt(78, 88)),
+    text: hsl(neutralHue, randomInt(8, 18), randomInt(12, 20)),
+    mute: hsl(neutralHue, randomInt(10, 24), randomInt(36, 46)),
+    accent: hsl(baseHue, accentS, accentL),
+    accent2: hsl(hue(baseHue + accent2Delta), accent2S, accent2L),
+  };
 }
 
 export function cssColorToHex(cssColor: string): string {

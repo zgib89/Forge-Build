@@ -10,9 +10,10 @@ export const auroraTemplates: Record<string, string> = {
   --color-mute: {{state.palette.mute}};
   --color-accent: {{state.palette.accent}};
   --color-accent-2: {{#if state.palette.accent2}}{{state.palette.accent2}}{{else}}{{state.palette.accent}}{{/if}};
-  --font-display: 'Inter', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: {{font state.fontPair "display"}};
+  --font-body: {{font state.fontPair "body"}};
+  --font-mono: {{font state.fontPair "mono"}};
+{{fxVars state}}
 }
 
 @layer base {
@@ -36,6 +37,7 @@ export const auroraTemplates: Record<string, string> = {
 }
 
 @view-transition { navigation: auto; }
+{{fxRules state}}
 
 .aurora {
   position: fixed;
@@ -46,8 +48,8 @@ export const auroraTemplates: Record<string, string> = {
     radial-gradient(50% 50% at 80% 20%, var(--color-accent-2) 0%, transparent 60%),
     radial-gradient(70% 70% at 50% 90%, var(--color-accent) 0%, transparent 70%),
     var(--color-bg);
-  filter: blur(80px) saturate(1.2);
-  opacity: 0.7;
+  filter: blur(calc(52px + var(--fx-glow) * 10px)) saturate(calc(1 + var(--fx-glow) * .08));
+  opacity: calc(.42 + var(--fx-glow) * .08);
   animation: drift 40s ease-in-out infinite alternate;
 }
 @keyframes drift {
@@ -60,11 +62,12 @@ export const auroraTemplates: Record<string, string> = {
   border: 1px solid var(--color-border);
   border-radius: 1.5rem;
   padding: 2rem;
-  backdrop-filter: blur(12px);
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), border-color 300ms;
+  backdrop-filter: blur(calc(8px + var(--fx-glass) * 5px));
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), border-color 300ms, box-shadow 300ms;
+  box-shadow: 0 0 calc(var(--fx-edge) * 8px) color-mix(in oklch, var(--color-accent) calc(var(--fx-glow) * 5%), transparent);
 }
 .bento-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(calc(-1 * var(--fx-hover-depth)));
   border-color: var(--color-accent);
 }
 
@@ -106,7 +109,7 @@ const { title = "{{jsonStr state.name}} — {{jsonStr state.role}}", description
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+    <link href="{{font state.fontPair "link"}}" rel="stylesheet" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />

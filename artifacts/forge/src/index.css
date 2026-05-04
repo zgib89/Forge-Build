@@ -95,7 +95,7 @@
   .surface-2 { background: var(--color-surface-2); }
   .border-app { border-color: var(--color-border); }
 
-  .btn {
+  :where(.btn) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -110,8 +110,8 @@
     background: transparent;
     color: var(--color-text);
   }
-  .btn:hover { transform: translateY(-1px); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  :where(.btn):hover { transform: translateY(-1px); }
+  :where(.btn):disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
   .btn-primary {
     background: var(--color-accent);
