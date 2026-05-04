@@ -18,6 +18,7 @@ import { apiUrl } from "../../lib/api";
 import { PRESETS } from "../../lib/presets";
 import { FONT_PAIRS, RADIUS_SCALES } from "../../lib/typography";
 import { toast } from "../../lib/toast";
+import { postProcessExportZip } from "../../lib/exportZip";
 
 const DEPLOY_STAGES = [
   { id: "validate", label: "Validating config" },
@@ -167,7 +168,7 @@ export default function StepExport() {
         const text = await res.text();
         throw new Error(text || `Export failed (${res.status})`);
       }
-      const blob = await res.blob();
+      const blob = await postProcessExportZip(await res.blob(), data);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
